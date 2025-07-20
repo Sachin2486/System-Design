@@ -1,0 +1,14 @@
+[2025-07-20 12:58:50][INFO] System initialized
+[2025-07-20 12:58:50][UNKNOWN] Error connecting to database
+[2025-07-20 12:59:35][INFO] System initialized
+[2025-07-20 12:59:35][UNKNOWN] Error connecting to database
+[2025-07-20 12:59:35][INFO] Thread 2 - message 0
+[2025-07-20 12:59:35][INFO] Thread 2 - message 1
+[2025-07-20 12:59:35][INFO] Thread 2 - message 2
+[2025-07-20 12:59:35][INFO] Thread 2 - message 3
+[2025-07-20 12:59:35][INFO] Thread 2 - message 4
+[2025-07-20 12:59:35][INFO] Thread 1 - message 0
+[2025-07-20 12:59:35][INFO] Thread 1 - message 1
+[2025-07-20 12:59:35][INFO] Thread 1 - message 2
+[2025-07-20 12:59:35][INFO] Thread 1 - message 3
+[2025-07-20 12:59:35][INFO] Thread 1 - message 4
