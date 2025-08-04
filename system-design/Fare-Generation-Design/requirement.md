@@ -1,0 +1,1 @@
+LLD for fare generation for a cab service. Suppose you give ride to multiple passengers and you they come at multiple points and drop off at multiple points. At the end of each ride you need to tell the fare to each passenger. Please make the design keeping in mind that in future more factors can come in that affect the fare.For example: Ride can depend on distance, time etc.
