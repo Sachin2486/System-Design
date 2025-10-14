@@ -1,5 +1,14 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
 import java.util.*;
 
+// Enum for Vehicle Type
 enum VehicleType {
     CAR,
     MOTORCYCLE,
@@ -16,7 +25,7 @@ class Vehicle {
         this.type = type;
     }
     
-    public String getLicensePlate() {
+    public String getLicensePlate(){
         return licensePlate;
     }
     
@@ -41,15 +50,15 @@ class ParkingSpot {
     public boolean isAvailable() {
         return !occupied;
     }
-    
+
     public VehicleType getSpotType() {
         return spotType;
     }
-    
+
     public int getSpotId() {
         return spotId;
     }
-    
+
     public boolean parkVehicle(Vehicle vehicle) {
         if (occupied || vehicle.getType() != this.spotType) {
             return false;
@@ -58,7 +67,7 @@ class ParkingSpot {
         this.occupied = true;
         return true;
     }
-    
+
     public boolean removeVehicle() {
         if (!occupied) return false;
         this.parkedVehicle = null;
@@ -101,7 +110,7 @@ class ParkingLevel {
         for (ParkingSpot spot : spots) {
             if (!spot.isAvailable() && spot.toString().contains(licensePlate)) {
                 spot.removeVehicle();
-                System.out.println(" Vehicle " + licensePlate + " exited from Level " + levelId + ", Spot " + spot.getSpotId());
+                System.out.println("Vehicle " + licensePlate + " exited from Level " + levelId + ", Spot " + spot.getSpotId());
                 return true;
             }
         }
@@ -194,6 +203,3 @@ public class ParkingSystem {
         lot.displayAvailability();
     }
 }
-
-
-    
