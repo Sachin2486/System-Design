@@ -1,8 +1,16 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
 import java.util.*;
 
 // Enum representing different product categories
 enum ProductType {
-	BOOK, CALENDAR, CLOCK, PEN
+    BOOK, CALENDAR, CLOCK, PEN
 }
 
 // Product class representing a generic product
@@ -21,12 +29,12 @@ class Product {
         return name;
     }
     
-    public double getPrice() {
-        return price;
-    }
-    
     public ProductType getType() {
         return type;
+    }
+    
+    public double getPrice() {
+        return price;
     }
 }
 
@@ -43,19 +51,19 @@ class CartItem {
     public Product getProduct() {
         return product;
     }
-
+    
     public int getQuantity() {
         return quantity;
     }
     
-    public void increaseQuantity(int qty) {
-        quantity += qty;
+    public void increaseQuantity(int qty){
+        this.quantity += qty;
     }
     
     public void decreaseQuantity(int qty) {
         this.quantity = Math.max(0, this.quantity - qty);
     }
-
+    
     public double getTotalPrice() {
         return product.getPrice() * quantity;
     }
@@ -90,12 +98,12 @@ class PercentageDiscount implements DiscountStrategy {
 class ShoppingCart {
     private Map<String, CartItem> cartItems;
     private DiscountStrategy discountStrategy;
-
+    
     public ShoppingCart() {
         this.cartItems = new HashMap<>();
         this.discountStrategy = new NoDiscount(); // default
     }
-
+    
     // Add item to cart
     public void addItem(Product product, int quantity) {
         if (cartItems.containsKey(product.getName())) {
