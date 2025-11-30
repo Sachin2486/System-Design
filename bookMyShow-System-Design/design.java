@@ -1,295 +1,409 @@
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Movie Ticket Booking - compact, interview-ready implementation.
- * Run: javac MovieBookingApp.java && java MovieBookingApp
- */
-public class MovieBookingApp {
+enum SeatType {
+    NORMAL, PREMIUM
+}
 
-    // ----------------- Enums -----------------
-    enum SeatType { NORMAL, PREMIUM }
+enum SeatStatus {
+    AVAILABLE, BOOKED
+}
 
-    enum BookingStatus { SUCCESS, FAILED }
+enum PaymentStatus {
+    PENDING, SUCCESS, FAILED
+}
 
-    // ----------------- Domain Models -----------------
-    static class Seat {
-        final String id; // e.g., "A1"
-        final SeatType type;
-        final double price;
-        final AtomicBoolean booked = new AtomicBoolean(false);
+class User {
+    private final int id;
+    private final String name;
+    
+    public User(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+    
+    public int getId() {
+        return id;
+    }
+    
+    public  String getName() {
+        return name;
+    }
+}
 
-        Seat(String id, SeatType type, double price) {
-            this.id = id;
-            this.type = type;
-            this.price = price;
-        }
+class Movie {
+    private final int id;
+    private final String title;
+    private final int durationMinutes;
+    
+    public Movie(int id, String title, int durationMinutes) {
+        this.id = id;
+        this.title = title;
+        this.durationMinutes = durationMinutes;
+    }
+    
+    public int getId() {
+        return id;
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+    
+    @Override
+    public String toString() {
+        return "Movie{id=" + id + ", title='" + title + "', duration=" + durationMinutes + " mins}";
+    }
+}
 
-        boolean tryReserve() {
-            return booked.compareAndSet(false, true);
-        }
+class Seat {
+    private final int id;
+    private final String label; // e.g. A1, A2
+    private final SeatType type;
+    private final double price;
+    private SeatStatus status;
 
-        void release() {
-            booked.set(false);
-        }
-
-        boolean isBooked() {
-            return booked.get();
-        }
-
-        @Override public String toString() {
-            return id + "(" + type + (isBooked() ? ":X" : ":O") + ")";
-        }
+    public Seat(int id, String label, SeatType type, double price) {
+        this.id = id;
+        this.label = label;
+        this.type = type;
+        this.price = price;
+        this.status = SeatStatus.AVAILABLE;
     }
 
-    static class Theater {
-        final String id;
-        final String name;
-        final Map<String, Show> shows = new ConcurrentHashMap<>();
+    public int getId() { return id; }
+    public String getLabel() { return label; }
+    public SeatType getType() { return type; }
+    public double getPrice() { return price; }
+    public SeatStatus getStatus() { return status; }
 
-        Theater(String id, String name) { this.id = id; this.name = name; }
-
-        void addShow(Show s) { shows.put(s.id, s); }
-        void removeShow(String showId) { shows.remove(showId); }
+    public void setStatus(SeatStatus status) {
+        this.status = status;
     }
 
-    static class Movie {
-        final String id;
-        final String title;
-        final int durationMinutes;
+    @Override
+    public String toString() {
+        return label + "(" + type + "," + status + "," + price + ")";
+    }
+}
 
-        Movie(String id, String title, int durationMinutes) {
-            this.id = id; this.title = title; this.durationMinutes = durationMinutes;
-        }
+class Theater {
+    private final int id;
+    private final String name;
+    private final String location;
+    
+    public Theater(int id, String name, String location) {
+        this.id = id;
+        this.name = name;
+        this.location = location;
+    }
+    
+    public int getId() {
+        return id;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public String getLocation() {
+        return location;
+    }
+    
+    @Override
+    public String toString() {
+        return "Theater{id=" + id + ", name='" + name + "', location='" + location + "'}";
+    }
+}
+
+class Show {
+    private final int id;
+    private final Movie movie;
+    private final Theater theater;
+    private final Date showTime;
+    private final Map<Integer, Seat> seats = new HashMap<>();
+    private final ReentrantLock lock = new ReentrantLock();
+
+    public Show(int id, Movie movie, Theater theater, Date showTime) {
+        this.id = id;
+        this.movie = movie;
+        this.theater = theater;
+        this.showTime = showTime;
     }
 
-    static class Show {
-        final String id; // unique show id
-        final Movie movie;
-        final Theater theater;
-        final LocalDateTime startTime;
-        final Map<String, Seat> seats; // seatId -> Seat
+    public int getId() { return id; }
+    public Movie getMovie() { return movie; }
+    public Theater getTheater() { return theater; }
+    public Date getShowTime() { return showTime; }
 
-        Show(String id, Movie movie, Theater theater, LocalDateTime startTime, Map<String, Seat> seats) {
-            this.id = id; this.movie = movie; this.theater = theater; this.startTime = startTime;
-            this.seats = new ConcurrentHashMap<>(seats);
+    public void addSeat(Seat seat) {
+        seats.put(seat.getId(), seat);
+    }
+
+    public Collection<Seat> getAllSeats() {
+        return seats.values();
+    }
+
+    public void printSeatingLayout() {
+        System.out.println("\nSeating layout for Show " + id + " (" +
+                movie.getTitle() + " @ " + theater.getName() + "):");
+
+        // Simple print: group by rows (first letter of label)
+        Map<Character, List<Seat>> byRow = new TreeMap<>();
+        for (Seat s : seats.values()) {
+            char row = s.getLabel().charAt(0);
+            byRow.putIfAbsent(row, new ArrayList<>());
+            byRow.get(row).add(s);
         }
-
-        // snapshot of seating
-        Map<String, Boolean> seatingSnapshot() {
-            return seats.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().isBooked()));
-        }
-
-        void printSeating() {
-            System.out.println("Seating for show " + id + " - " + movie.title + " @ " + startTime);
-            seats.values().forEach(s -> System.out.print(s + " "));
+        for (Map.Entry<Character, List<Seat>> e : byRow.entrySet()) {
+            System.out.print("Row " + e.getKey() + ": ");
+            e.getValue().stream()
+                    .sorted(Comparator.comparing(Seat::getLabel))
+                    .forEach(seat -> System.out.print(seat.getLabel() + "[" + seat.getStatus() + "] "));
             System.out.println();
         }
     }
 
-    static class User {
-        final String id;
-        final String name;
-        User(String id, String name) { this.id = id; this.name = name; }
-    }
-
-    static class Booking {
-        final String bookingId;
-        final String showId;
-        final String userId;
-        final List<String> seats;
-        final double amount;
-        final LocalDateTime createdAt;
-
-        Booking(String bookingId, String showId, String userId, List<String> seats, double amount) {
-            this.bookingId = bookingId; this.showId = showId; this.userId = userId; this.seats = seats;
-            this.amount = amount; this.createdAt = LocalDateTime.now();
-        }
-    }
-
-    // ----------------- Services & Repositories -----------------
-    static class InMemoryRepo {
-        final Map<String, Theater> theaters = new ConcurrentHashMap<>();
-        final Map<String, Movie> movies = new ConcurrentHashMap<>();
-        final Map<String, Show> shows = new ConcurrentHashMap<>();
-        final Map<String, User> users = new ConcurrentHashMap<>();
-        final Map<String, Booking> bookings = new ConcurrentHashMap<>();
-    }
-
-    static class PaymentService {
-        // Mock payment - always succeed in this demo
-        boolean charge(String userId, double amount) {
-            // In real: integrate with payment gateway; handle retries, idempotency.
-            return true;
-        }
-    }
-
-    static class BookingService {
-        private final InMemoryRepo repo;
-        private final PaymentService paymentService;
-        private final AtomicLong bookingCounter = new AtomicLong(1000);
-
-        BookingService(InMemoryRepo repo, PaymentService paymentService) {
-            this.repo = repo; this.paymentService = paymentService;
-        }
-
-        // Attempt to book seats atomically using seat.tryReserve()
-        synchronized BookingResult bookSeats(String userId, String showId, List<String> seatIds) {
-            Show show = repo.shows.get(showId);
-            if (show == null) return BookingResult.failed("Show not found");
-
-            List<Seat> seatsToReserve = new ArrayList<>();
-            for (String sid : seatIds) {
-                Seat s = show.seats.get(sid);
-                if (s == null) return BookingResult.failed("Seat " + sid + " not found");
-                seatsToReserve.add(s);
-            }
-
-            // Attempt to reserve all seats atomically (optimistic)
-            List<Seat> reserved = new ArrayList<>();
-            for (Seat s : seatsToReserve) {
-                boolean ok = s.tryReserve();
-                if (!ok) {
-                    // release already reserved in this attempt
-                    for (Seat r : reserved) r.release();
-                    return BookingResult.failed("Seat " + s.id + " already booked");
+    /**
+     * Thread-safe seat booking: ensures no double booking.
+     */
+    public List<Seat> bookSeats(List<Integer> seatIds) {
+        lock.lock();
+        try {
+            List<Seat> selected = new ArrayList<>();
+            // Check availability first
+            for (int seatId : seatIds) {
+                Seat seat = seats.get(seatId);
+                if (seat == null || seat.getStatus() == SeatStatus.BOOKED) {
+                    return null; // at least one seat not available
                 }
-                reserved.add(s);
+                selected.add(seat);
             }
-
-            // compute amount
-            double amount = reserved.stream().mapToDouble(seat -> seat.price).sum();
-
-            // payment
-            boolean paid = paymentService.charge(userId, amount);
-            if (!paid) {
-                // rollback
-                for (Seat r : reserved) r.release();
-                return BookingResult.failed("Payment failed");
+            // Mark as booked
+            for (Seat s : selected) {
+                s.setStatus(SeatStatus.BOOKED);
             }
+            return selected;
+        } finally {
+            lock.unlock();
+        }
+    }
+}
 
-            // create booking record
-            String bid = "BKG-" + bookingCounter.getAndIncrement();
-            Booking booking = new Booking(bid, showId, userId, seatIds, amount);
-            repo.bookings.put(bid, booking);
-            return BookingResult.success(booking);
+class Booking {
+    private final int id;
+    private final User user;
+    private final Show show;
+    private final List<Seat> seats;
+    private final double totalAmount;
+    private PaymentStatus paymentStatus;
+
+    public Booking(int id, User user, Show show, List<Seat> seats, double totalAmount) {
+        this.id = id;
+        this.user = user;
+        this.show = show;
+        this.seats = seats;
+        this.totalAmount = totalAmount;
+        this.paymentStatus = PaymentStatus.PENDING;
+    }
+
+    public int getId() { return id; }
+    public PaymentStatus getPaymentStatus() { return paymentStatus; }
+
+    public void markPaymentStatus(PaymentStatus status) {
+        this.paymentStatus = status;
+    }
+
+    @Override
+    public String toString() {
+        return "Booking{id=" + id +
+                ", user=" + user.getName() +
+                ", movie=" + show.getMovie().getTitle() +
+                ", theater=" + show.getTheater().getName() +
+                ", showTime=" + show.getShowTime() +
+                ", seats=" + seats +
+                ", totalAmount=" + totalAmount +
+                ", paymentStatus=" + paymentStatus +
+                '}';
+    }
+}
+
+class PaymentService {
+    // For interview: simple simulation
+    public boolean processPayment(User user, double amount) {
+        System.out.println("[PAYMENT] Charging " + user.getName() + " amount: " + amount);
+        // Always succeed in this demo
+        return true;
+    }
+}
+
+class MovieBookingSystem {
+
+    private final Map<Integer, Movie> movies = new ConcurrentHashMap<>();
+    private final Map<Integer, Theater> theaters = new ConcurrentHashMap<>();
+    private final Map<Integer, Show> shows = new ConcurrentHashMap<>();
+    private final Map<Integer, Booking> bookings = new ConcurrentHashMap<>();
+
+    private final AtomicInteger movieIdGen = new AtomicInteger(1);
+    private final AtomicInteger theaterIdGen = new AtomicInteger(1);
+    private final AtomicInteger showIdGen = new AtomicInteger(1);
+    private final AtomicInteger bookingIdGen = new AtomicInteger(1);
+
+    private final PaymentService paymentService = new PaymentService();
+
+    /* ===== Admin Operations ===== */
+
+    public Movie addMovie(String title, int duration) {
+        int id = movieIdGen.getAndIncrement();
+        Movie m = new Movie(id, title, duration);
+        movies.put(id, m);
+        System.out.println("[ADMIN] Added movie: " + m);
+        return m;
+    }
+
+    public Theater addTheater(String name, String location) {
+        int id = theaterIdGen.getAndIncrement();
+        Theater t = new Theater(id, name, location);
+        theaters.put(id, t);
+        System.out.println("[ADMIN] Added theater: " + t);
+        return t;
+    }
+
+    public Show addShow(int movieId, int theaterId, Date showTime) {
+        Movie m = movies.get(movieId);
+        Theater t = theaters.get(theaterId);
+        if (m == null || t == null) {
+            throw new IllegalArgumentException("Invalid movie or theater id");
+        }
+        int id = showIdGen.getAndIncrement();
+        Show s = new Show(id, m, t, showTime);
+        shows.put(id, s);
+        System.out.println("[ADMIN] Added show: " + id + " for movie " + m.getTitle() +
+                " at theater " + t.getName() + " time " + showTime);
+        return s;
+    }
+
+    public void configureSeatsForShow(int showId, int rows, int cols,
+                                      int premiumRows, double normalPrice, double premiumPrice) {
+        Show show = shows.get(showId);
+        if (show == null) {
+            throw new IllegalArgumentException("Show not found");
+        }
+        int seatId = 1;
+        for (int r = 0; r < rows; r++) {
+            char rowChar = (char) ('A' + r);
+            for (int c = 1; c <= cols; c++) {
+                String label = rowChar + String.valueOf(c);
+                SeatType type = (r < premiumRows) ? SeatType.PREMIUM : SeatType.NORMAL;
+                double price = (type == SeatType.PREMIUM) ? premiumPrice : normalPrice;
+                Seat seat = new Seat(seatId++, label, type, price);
+                show.addSeat(seat);
+            }
+        }
+        System.out.println("[ADMIN] Configured seats for show " + showId);
+    }
+
+    /* ===== User Operations ===== */
+
+    public List<Movie> listMovies() {
+        return new ArrayList<>(movies.values());
+    }
+
+    public List<Show> listShowsByMovie(int movieId) {
+        List<Show> result = new ArrayList<>();
+        for (Show s : shows.values()) {
+            if (s.getMovie().getId() == movieId) {
+                result.add(s);
+            }
+        }
+        return result;
+    }
+
+    public void viewSeating(int showId) {
+        Show show = shows.get(showId);
+        if (show != null) {
+            show.printSeatingLayout();
         }
     }
 
-    static class BookingResult {
-        final BookingStatus status;
-        final String message;
-        final Booking booking;
-
-        private BookingResult(BookingStatus status, String message, Booking booking) {
-            this.status = status; this.message = message; this.booking = booking;
-        }
-
-        static BookingResult success(Booking b) {
-            return new BookingResult(BookingStatus.SUCCESS, "Booked: " + b.bookingId, b);
-        }
-
-        static BookingResult failed(String reason) {
-            return new BookingResult(BookingStatus.FAILED, reason, null);
-        }
-    }
-
-    // ----------------- Admin Service -----------------
-    static class AdminService {
-        final InMemoryRepo repo;
-
-        AdminService(InMemoryRepo repo) { this.repo = repo; }
-
-        Theater createTheater(String id, String name) {
-            Theater t = new Theater(id, name); repo.theaters.put(id, t); return t;
-        }
-
-        Movie createMovie(String id, String title, int duration) {
-            Movie m = new Movie(id, title, duration); repo.movies.put(id, m); return m;
-        }
-
-        Show createShow(String showId, String movieId, String theaterId, LocalDateTime start,
-                        Map<String, Seat> seats) {
-            Movie m = repo.movies.get(movieId);
-            Theater t = repo.theaters.get(theaterId);
-            if (m == null || t == null) throw new IllegalArgumentException("movie/theater missing");
-            Show s = new Show(showId, m, t, start, seats);
-            t.addShow(s);
-            repo.shows.put(showId, s);
-            return s;
-        }
-
-        void removeShow(String showId) {
-            Show s = repo.shows.remove(showId);
-            if (s != null) s.theater.removeShow(showId);
-        }
-    }
-
-    // ----------------- Demo / Main -----------------
-    public static void main(String[] args) throws Exception {
-        InMemoryRepo repo = new InMemoryRepo();
-        AdminService admin = new AdminService(repo);
-        PaymentService payment = new PaymentService();
-        BookingService bookingService = new BookingService(repo, payment);
-
-        // create sample data
-        Theater t1 = admin.createTheater("T1", "PVR Plaza");
-        Movie m1 = admin.createMovie("M1", "Interstellar", 169);
-
-        // seating: rows A-C, cols 1-5; premium: row A
-        Map<String, Seat> seats = new HashMap<>();
-        for (char r='A'; r<='C'; r++) {
-            for (int c=1; c<=5; c++) {
-                String id = "" + r + c;
-                SeatType type = (r == 'A') ? SeatType.PREMIUM : SeatType.NORMAL;
-                double price = (type == SeatType.PREMIUM) ? 300 : 150;
-                seats.put(id, new Seat(id, type, price));
-            }
-        }
-
-        Show show = admin.createShow("S1", "M1", "T1", LocalDateTime.now().plusHours(2), seats);
-
-        // register users
-        repo.users.put("U1", new User("U1", "Alice"));
-        repo.users.put("U2", new User("U2", "Bob"));
-
-        // Print available shows
-        System.out.println("Shows available:");
-        repo.shows.values().forEach(s ->
-            System.out.println(s.id + " - " + s.movie.title + " @ " + s.theater.name + " - " + s.startTime));
-
-        // Print seating
-        show.printSeating();
-
-        // Simulate concurrent bookings for same seat to show correctness
-        ExecutorService ex = Executors.newFixedThreadPool(4);
-        Callable<Void> task1 = () -> {
-            BookingResult r = bookingService.bookSeats("U1", "S1", Arrays.asList("A1", "A2"));
-            System.out.println("U1 booking -> " + r.status + " : " + r.message);
+    public Booking bookTickets(User user, int showId, List<Integer> seatIds) {
+        Show show = shows.get(showId);
+        if (show == null) {
+            System.out.println("[BOOKING] Show not found");
             return null;
-        };
-        Callable<Void> task2 = () -> {
-            BookingResult r = bookingService.bookSeats("U2", "S1", Arrays.asList("A1")); // conflicts on A1
-            System.out.println("U2 booking -> " + r.status + " : " + r.message);
+        }
+
+        // Concurrency handled inside Show.bookSeats()
+        List<Seat> reserved = show.bookSeats(seatIds);
+        if (reserved == null) {
+            System.out.println("[BOOKING] Some seats are already booked, booking failed for user " + user.getName());
             return null;
-        };
+        }
 
-        List<Callable<Void>> tasks = Arrays.asList(task1, task2);
-        ex.invokeAll(tasks);
-        ex.shutdown();
-        ex.awaitTermination(5, TimeUnit.SECONDS);
+        double totalAmount = reserved.stream().mapToDouble(Seat::getPrice).sum();
+        int bookingId = bookingIdGen.getAndIncrement();
+        Booking booking = new Booking(bookingId, user, show, reserved, totalAmount);
+        bookings.put(bookingId, booking);
 
-        // show final seating
-        show.printSeating();
+        boolean paymentSuccess = paymentService.processPayment(user, totalAmount);
+        booking.markPaymentStatus(paymentSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED);
 
-        // Display bookings
-        System.out.println("Bookings made:");
-        repo.bookings.values().forEach(b ->
-            System.out.println(b.bookingId + " user:" + b.userId + " seats:" + b.seats + " amt:" + b.amount));
+        System.out.println("[BOOKING] Booking created: " + booking);
+        return booking;
+    }
+}
+
+public class MovieBookingDemo {
+    public static void main(String[] args) {
+
+        MovieBookingSystem system = new MovieBookingSystem();
+
+        // Admin: Add movies and theaters
+        Movie m1 = system.addMovie("Inception", 148);
+        Movie m2 = system.addMovie("Interstellar", 169);
+
+        Theater t1 = system.addTheater("PVR Koramangala", "Bangalore");
+        Theater t2 = system.addTheater("INOX Mall", "Bangalore");
+
+        // Admin: Add shows
+        Show s1 = system.addShow(m1.getId(), t1.getId(), new Date());
+        Show s2 = system.addShow(m2.getId(), t2.getId(), new Date(System.currentTimeMillis() + 3600_000)); // +1 hr
+
+        // Admin: Configure seats (rows, cols, premiumRows, normalPrice, premiumPrice)
+        system.configureSeatsForShow(s1.getId(), 5, 10, 2, 200.0, 300.0);
+        system.configureSeatsForShow(s2.getId(), 4, 8, 1, 180.0, 280.0);
+
+        // Users
+        User sachin = new User(1, "Sachin");
+        User rohit = new User(2, "Rohit");
+
+        // List movies
+        System.out.println("\n=== Movies Available ===");
+        for (Movie m : system.listMovies()) {
+            System.out.println(m);
+        }
+
+        // List shows for a movie
+        System.out.println("\n=== Shows for " + m1.getTitle() + " ===");
+        for (Show s : system.listShowsByMovie(m1.getId())) {
+            System.out.println("Show ID: " + s.getId() + ", Theater: " + s.getTheater().getName()
+                    + ", Time: " + s.getShowTime());
+        }
+
+        // View seating for show s1
+        system.viewSeating(s1.getId());
+
+        // Book tickets
+        List<Integer> seatsForSachin = Arrays.asList(1, 2, 3); // seat IDs
+        system.bookTickets(sachin, s1.getId(), seatsForSachin);
+
+        // Try conflicting booking (concurrent-like scenario)
+        List<Integer> seatsForRohit = Arrays.asList(2, 4);
+        system.bookTickets(rohit, s1.getId(), seatsForRohit);
+
+        // View seating again to see updated status
+        system.viewSeating(s1.getId());
     }
 }
