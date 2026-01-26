@@ -1,0 +1,1 @@
+You're tasked with designing a Rate Limiter for a high-traffic service. The system should allow "X requests in Y seconds" per user. If the rate exceeds the limit, any further requests should be blocked for the remaining duration. Your solution must be scalable, thread-safe, and flexible to accommodate different rate-limiting strategies in the future!
