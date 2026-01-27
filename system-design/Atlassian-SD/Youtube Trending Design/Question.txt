@@ -1,0 +1,65 @@
+🛠️ System Design Question: Trending Videos on YouTube 📹🔥
+
+🧠 Problem Statement:
+Design a Trending Videos System 🌟 for YouTube that ranks videos based on real-time user engagement metrics (views 👀, likes 👍, comments 💬, shares 🔗).
+The system should process vast amounts of video telemetry data 📊,
+assign a percentile score 🎯 to each video, and dynamically update the trending list 📈.
+Users should be able to see the most trending videos with low latency ⏱️.
+
+💡 Requirements:
+
+🔍 Functional Requirements:
+
+1. Telemetry Ingestion 🚀:
+- Stream video view counts 📊, likes ❤️, shares 🔄, and comments 💬 in real time.
+- Process and store metrics efficiently to calculate trending scores 📈.
+2. Video Ranking 🏆:
+- Use a weighted ranking algorithm ⚖️ considering metrics like views, likes, shares, and watch duration ⏳ to rank videos.
+- Assign a percentile score 🥇 to each video, determining its trending position.
+3. Trending List 📰:
+- Provide users with an updated list of trending videos 📃 based on percentile scores.
+- Implement efficient pagination 📜 for large datasets.
+4. API Design 🌐:
+- Expose APIs to fetch trending videos 📲, with options for filtering and sorting.
+5. Admin Features 👨‍💻:
+- Admins can tweak ranking algorithm weights ⚙️.
+- Admin dashboard for monitoring system health 🌡️, usage statistics 📊, and ranking performance 📈.
+
+⚙️ Non-Functional Requirements:
+
+1. Scalability 📈:
+- Handle millions of concurrent users 🌍 and millions of video events 📹.
+- Ensure the system can scale horizontally ↔️ to support increased video and telemetry data.
+2. Availability ⏰:
+- Ensure high availability (99.9% uptime) ☁️, especially for the trending list API.
+3. Low Latency ⏳:
+- Ensure sub-200ms response times ⏲️ for fetching trending videos.
+4. Data Consistency ✅:
+- Implement eventual consistency 🔄 between video telemetry updates and trending score calculations.
+5. Security 🔒:
+- Secure APIs with authentication 🔑 and proper role-based access control.
+
+🌐 API Design:
+
+Design the RESTful APIs for managing and fetching trending videos 🌟. The APIs should support the following:
+
+- Trending Videos API 📲: Fetch trending videos 🌈, with filters for category 📂, region 🌍, etc.
+- Video Ranking API 🔍: Expose video ranking and percentile score 📊 for specific videos.
+- Admin API 👨‍💻: Manage ranking algorithm parameters ⚙️ and monitor system health 🌡️.
+
+🗃️ Database Design:
+
+Design a schema to handle the following entities:
+
+1. Videos 🎥: Store video metadata (ID, title, channel, category, upload time).
+2. Telemetry Data 📊: Track real-time metrics (views, likes, comments, shares) for each video.
+3. Ranking Scores 🥇: Store the computed percentile score and rank for each video.
+4. Admin Logs 📜: Record changes made to ranking algorithm parameters for auditing purposes 🔍.
+
+🔍 Use Case Queries:
+
+Write SQL queries to solve the following:
+
+1. Retrieve the top 10 trending videos 🥇 in a specific category 📂.
+2. Fetch all videos by a specific uploader 👤 and their current trending scores 📊.
+3. Generate a report of video metrics (views 👀, likes ❤️, etc.) across a given time period 🗓️ for all trending videos.

@@ -1,0 +1,88 @@
+1. Clarify the Requirements (5 minutes)
+- Start by asking questions to clarify any unclear aspects of the problem:
+- Who are the primary users? (viewers, content creators, admins)
+- What is the most critical feature? (real-time trending updates, ranking algorithms)
+- Are there any additional constraints? (scalability, low-latency requirements)
+- Confirm key functional and non-functional requirements to ensure you fully understand the scope:
+- "So, we need to design a system that allows users to view trending videos, track engagement metrics in real-time,
+and rank videos based on various performance metrics?"
+
+2. Define the Core Entities and Use Cases (5-7 minutes)
+- Identify the main entities involved:
+- Users (viewers, content creators, admins), Videos, Engagement Metrics (views, likes, shares), Ranking Scores.
+- Outline use cases:
+- User views trending videos: Displays a list of currently trending videos based on real-time data.
+- Content creator uploads a video: Updates the video’s engagement metrics.
+- Admin manages video data: Can view statistics, deactivate videos if necessary.
+- Ranking mechanism: Videos are ranked periodically based on engagement metrics and displayed accordingly.
+
+3. API Design and Functionality (10 minutes)
+- Start discussing API endpoints and key functionalities for the system:
+- User Authentication API: `POST /login`, `POST /register`
+
+- Video Management API:
+- `GET /trending` – Fetch the current list of trending videos.
+- `GET /videos/{id}` – Retrieve details and metrics for a specific video.
+- `POST /videos/{id}/engagement` – Update metrics for a video (views, likes, etc.).
+- Ranking API: `GET /videos/{id}/ranking` – Get the ranking and percentile score for a specific video.
+
+- Mention important features like:
+- Real-time updates through WebSockets for engagement metrics.
+- Error handling and rate limiting to manage API usage effectively.
+
+4. Database Schema Design (10 minutes)
+- Next, talk through the database design:
+- Tables:
+- Users: Store user information (name, email, role).
+- Videos: Store video details (ID, title, upload time, channel ID, category).
+- Telemetry Data: Store engagement metrics (video ID, views, likes, shares, timestamp).
+- Ranking Scores: Store ranking information (video ID, percentile score, last updated).
+- Design considerations:
+- Use indexes on frequently queried fields like `video ID`, `upload time`, and `engagement metrics`.
+- Establish relationships between tables (e.g., Foreign Key linking videos to engagement data).
+
+5. Ingestion Pipeline and Real-Time Updates (10-15 minutes)
+- Discuss how to implement the ingestion pipeline for streaming video telemetry:
+- Describe technologies to be used (e.g., Kafka, RabbitMQ for streaming data).
+- Explain how telemetry data will be processed in real-time and stored for ranking calculations.
+- Real-time ranking and updates:
+- Describe how to maintain a current list of trending videos based on real-time engagement metrics.
+- Mention using a sliding window approach to recalculate scores periodically for accuracy.
+- Discuss the use of technologies for efficient data processing:
+- Apache Flink or Spark Streaming for real-time analytics.
+- Geo-indexing or similar strategies for efficient querying.
+
+6. Scale and High Availability (10 minutes)
+- Mention how to ensure scalability and availability:
+- Microservices architecture to handle separate functionalities like ingestion, ranking, and video serving.
+- Use a Load Balancer to distribute requests evenly across services.
+- Database replication and sharding strategies to manage large volumes of data and transactions.
+- Employ Message Queues (e.g., RabbitMQ, Kafka) for reliability in processing telemetry data asynchronously.
+- Discuss caching strategies (e.g., Redis) for frequently accessed data like trending videos.
+
+7. Security Considerations (5 minutes)
+- Address key security aspects:
+- Authentication and Authorization: Use OAuth2 or JWT for securing APIs.
+- Data Encryption: Encrypt sensitive data (user details, video metrics) both at rest and in transit.
+- Rate limiting and monitoring to prevent abuse or DDoS attacks on the API.
+
+8. Conclude and Be Open to Questions (5 minutes)
+- Summarize:
+- "So, we have covered the core functionalities: ingestion of video metrics, real-time ranking, and user interactions. We’ve also ensured scalability and security for the system."
+- Open the floor for any questions or feedback from the interviewer:
+- "Are there any particular areas you’d like to dive deeper into, or did I miss any key details you’d like me to address?"
+
+
+Summary of Time Allocation
+
+| Activity                               | Time (minutes)  |
+|----------------------------------------|-----------------|
+| Introduction                           | 5               |
+| Problem Statement Clarification        | 5               |
+| High-Level Design Discussion           | 15              |
+| API Design                             | 10              |
+| Database Design                        | 10              |
+| Non-Functional Requirements            | 5               |
+| Use Case Queries                       | 5               |
+| Wrap-up and Questions                  | 5               |
+| Total                                  | 60              |

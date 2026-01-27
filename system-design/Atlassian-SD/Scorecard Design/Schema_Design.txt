@@ -1,0 +1,104 @@
+Here’s the Database Schema Design for the Scorecard Management System in table format:
+
+1. users
+| Column Name | Data Type | Description |
+|-------------|------------|-------------|
+| id          | SERIAL     | Primary key (Unique identifier for each user) |
+| name        | VARCHAR(255) | Full name of the user |
+| email       | VARCHAR(255) | Unique email address |
+| role        | ENUM('Admin', 'Evaluator', 'User') | Defines user roles |
+| created_at  | TIMESTAMP  | Timestamp when the user was created |
+| updated_at  | TIMESTAMP  | Timestamp for the last update |
+
+---
+
+2. scorecards
+| Column Name  | Data Type  | Description |
+|--------------|------------|-------------|
+| id           | SERIAL     | Primary key (Unique identifier for each scorecard) |
+| title        | VARCHAR(255) | Title or name of the scorecard |
+| status       | ENUM('Draft', 'Submitted', 'Finalized') | Current status of the scorecard |
+| created_by   | INTEGER    | Foreign key referencing `users(id)` (Admin who created the scorecard) |
+| assigned_evaluator | INTEGER | Foreign key referencing `users(id)` (Evaluator assigned to fill out the scorecard) |
+| created_at   | TIMESTAMP  | Timestamp when the scorecard was created |
+| updated_at   | TIMESTAMP  | Timestamp for the last update |
+
+---
+
+3. sections
+| Column Name  | Data Type  | Description |
+|--------------|------------|-------------|
+| id           | SERIAL     | Primary key (Unique identifier for each section) |
+| scorecard_id | INTEGER    | Foreign key referencing `scorecards(id)` (Scorecard this section belongs to) |
+| title        | VARCHAR(255) | Title or name of the section |
+| created_at   | TIMESTAMP  | Timestamp when the section was created |
+| updated_at   | TIMESTAMP  | Timestamp for the last update |
+
+---
+
+4. questions
+| Column Name  | Data Type  | Description |
+|--------------|------------|-------------|
+| id           | SERIAL     | Primary key (Unique identifier for each question) |
+| section_id   | INTEGER    | Foreign key referencing `sections(id)` (Section this question belongs to) |
+| text         | TEXT       | The question text |
+| question_type| ENUM('Numeric', 'Text') | Type of response (e.g., numeric score or textual feedback) |
+| weight       | INTEGER    | Weight of the question (used for weighted scoring) |
+| created_at   | TIMESTAMP  | Timestamp when the question was created |
+| updated_at   | TIMESTAMP  | Timestamp for the last update |
+
+---
+
+5. scores
+| Column Name  | Data Type  | Description |
+|--------------|------------|-------------|
+| id           | SERIAL     | Primary key (Unique identifier for each score entry) |
+| question_id  | INTEGER    | Foreign key referencing `questions(id)` (Question being scored) |
+| evaluator_id | INTEGER    | Foreign key referencing `users(id)` (Evaluator providing the score) |
+| scorecard_id | INTEGER    | Foreign key referencing `scorecards(id)` (The scorecard being filled out) |
+| response     | TEXT or INTEGER | Response provided (numeric score or text feedback) |
+| created_at   | TIMESTAMP  | Timestamp when the score was given |
+| updated_at   | TIMESTAMP  | Timestamp for the last update |
+
+---
+
+6. audit_logs
+| Column Name  | Data Type  | Description |
+|--------------|------------|-------------|
+| id           | SERIAL     | Primary key (Unique identifier for each audit log entry) |
+| action       | VARCHAR(255) | Action taken (e.g., created, updated, submitted, finalized) |
+| user_id      | INTEGER    | Foreign key referencing `users(id)` (User who performed the action) |
+| scorecard_id | INTEGER    | Foreign key referencing `scorecards(id)` (Scorecard affected by the action) |
+| timestamp    | TIMESTAMP  | Timestamp when the action was taken |
+
+---
+
+7. notifications
+| Column Name  | Data Type  | Description |
+|--------------|------------|-------------|
+| id           | SERIAL     | Primary key (Unique identifier for each notification) |
+| user_id      | INTEGER    | Foreign key referencing `users(id)` (User receiving the notification) |
+| message      | TEXT       | The notification message (e.g., "Your scorecard has been finalized.") |
+| read         | BOOLEAN    | Status of the notification (whether it has been read) |
+| created_at   | TIMESTAMP  | Timestamp when the notification was created |
+
+---
+
+Relationships:
+1. One-to-Many between `users` (Admin) and `scorecards` (An Admin creates multiple scorecards).
+2. One-to-Many between `scorecards` and `sections` (A scorecard contains multiple sections).
+3. One-to-Many between `sections` and `questions` (A section contains multiple questions).
+4. One-to-Many between `questions` and `scores` (Each question can have multiple scores for different users).
+5. One-to-Many between `scorecards` and `scores` (Each scorecard contains multiple scores).
+6. One-to-Many between `users` (Evaluator) and `scores` (An evaluator provides multiple scores).
+7. One-to-Many between `scorecards` and `audit_logs` (A scorecard can have multiple audit log entries).
+8. One-to-Many between `users` and `notifications` (Each user can receive multiple notifications).
+
+---
+
+Reading Materials and Resources:
+1. [Designing Data-Intensive Applications](https://dataintensive.net/): A great book to understand core concepts of data modeling, database design, and scalability.
+2. [Microservices Architecture - Martin Fowler](https://martinfowler.com/articles/microservices.html): For understanding how to build scalable services, which could be useful for structuring the Scorecard Management System.
+3. [SQL Schema Design Best Practices](https://www.percona.com/blog/2020/04/13/sql-schema-design-best-practices/): Best practices to design efficient and scalable SQL schemas.
+4. [PostgreSQL Documentation](https://www.postgresql.org/docs/): Since this system is relational-heavy, PostgreSQL is a great choice for the database.
+5. [RESTful API Design](https://restfulapi.net/): Guidelines for designing clean, scalable, and versioned REST APIs.

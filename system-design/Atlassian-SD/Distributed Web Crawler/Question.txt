@@ -1,0 +1,139 @@
+
+🚀 System Design Interview Question: Build a Web Crawler
+
+🕸️ Scenario:
+You are tasked with designing a scalable web crawler 🕵️‍♂️ that can efficiently crawl millions of web pages 🌐.
+This system will be responsible for gathering structured data 🧩 from websites and handling the complexities of large-scale crawling.
+You need to build this system while ensuring it can scale to billions of pages, handle errors 🛑,
+avoid loops 🔁, and manage retries when requests fail ❌.
+
+🔍 Requirements:
+
+1. Crawl Multiple Websites Concurrently 🌍:
+- The system should crawl millions of pages every day. The crawler must support parallel requests to speed up crawling.
+
+2. URL De-duplication 🚫🔁:
+- Prevent duplicate URLs from being crawled more than once, ensuring the same page is not reprocessed.
+
+3. Handle Different Types of Pages 📄:
+- The crawler should be able to handle different types of content:
+- HTML pages.
+- Static resources (images, CSS).
+- PDFs or other document formats.
+
+4. Retry Mechanism 🔄:
+- Implement a retry mechanism in case of failed requests (e.g., due to network failures 🌐 or server errors 🛑).
+
+5. Respect Robots.txt 🤖:
+- The crawler should respect website rules defined in the robots.txt file. Make sure the crawler doesn't breach the rules!
+
+6. URL Depth Limit 📏:
+- The crawler must only go up to 3 levels deep from the starting page (for example, homepage > category page > product page).
+
+7. Avoid Loops 🔄❌:
+- Detect and avoid loops when visiting web pages (e.g., a link on Page A takes you to Page B, which links back to Page A).
+
+8. Data Storage 🏦:
+- Store the data efficiently:
+- Metadata about the web pages.
+- HTML content.
+- URLs crawled.
+- Optional: Add support for indexing the data for fast lookup 🔍.
+
+9. Throttling 🐢:
+- The system must be polite in its crawling, meaning it should limit the number of requests to a single domain to avoid overloading websites.
+
+10. Scalability 📈:
+- Design the system so that it can scale as the number of pages to crawl increases exponentially.
+Ensure your design can handle millions of URLs at once.
+
+🚨 Non-Functional Requirements:
+
+- Latency ⏱️:
+The system should be designed for low latency so that it can crawl and process pages in a timely manner.
+
+- Fault Tolerance 🔧:
+The system must be resilient against failures. What happens if some of the crawlers fail?
+
+- Monitoring & Logging 📊:
+The system should log every request made, track the number of successful/failed requests, and monitor real-time performance metrics.
+
+---
+
+📋 Clarifications You Can Ask During the Interview:
+
+1. Scope of Crawling 🛣️:
+- Should the crawler only work on public websites, or will it need to support login-protected sites?
+
+2. Data Processing 📈:
+- Do we need to process data (such as extracting specific tags or content) from the pages, or just store raw HTML for now?
+
+3. Crawling Frequency 🔄:
+- How often should the pages be re-crawled? Should there be a refresh rate for certain URLs?
+
+4. Robots.txt Compliance 🤖:
+- How strict are the rules for respecting robots.txt files? Should there be options for overriding them?
+
+5. Infrastructure 🏗️:
+- Should this be built for cloud deployment (AWS, GCP), or is it assumed to be deployed on-premises?
+
+---
+
+🛠️ Design Components:
+
+1. Crawler Manager 🎛️:
+- Manages the pool of crawlers running concurrently. Assigns URLs to be crawled, keeping track of which pages have been visited.
+
+2. URL Frontier 🏃‍♂️:
+- A queue that stores URLs to be visited. The crawler picks URLs from this queue, processes them, and stores new URLs that it finds.
+- Must handle URL de-duplication to avoid repeated crawling.
+
+3. Parser 📝:
+- Extracts relevant data from HTML pages (or other types of files). Processes and stores this information for future use.
+
+4. Data Storage 💾:
+- Metadata Database: Stores information about visited pages (timestamp, URL, response status).
+- HTML/Content Storage: Stores the actual content of crawled pages.
+
+5. Scheduler & Throttler 🕒:
+- Manages request timing, preventing overloading websites or violating their robots.txt rules. Could implement rate-limiting to slow down requests.
+
+6. Retry System 🔄:
+- Implements retries with backoff for failed requests. For example, if a page fails, retry it after a few seconds.
+
+7. Robots.txt Handler 🤖:
+- Fetches and processes robots.txt files from websites, ensuring the crawler respects disallowed paths and throttling instructions.
+
+8. Loop Detection 🔄🛑:
+- Identifies URL patterns that cause loops (A -> B -> A) and avoids re-crawling such URLs.
+
+9. Scaling Mechanism 📈:
+- Use distributed crawlers that run on multiple machines/servers to handle large-scale crawling.
+A message queue system like RabbitMQ or Kafka can be used to distribute work between crawler instances.
+
+10. Logging and Monitoring 📊:
+- A logging system to track the number of URLs crawled, response times, errors, etc. Monitoring tools like Prometheus or Grafana for live metrics.
+
+---
+
+🔥 Bonus Points (Advanced Features):
+
+1. Distributed Crawling 🖥️⚙️:
+- Design a distributed system where multiple servers coordinate the crawling process to achieve higher throughput.
+
+2. Politeness Policy 🛑:
+- Implement mechanisms to detect the rate limits imposed by different websites and adjust the crawl rate dynamically to avoid getting blocked.
+
+3. Search Engine Integration 🔍:
+- The system could also interface with search engines and be used to build an index of crawled pages, similar to Google or Bing.
+
+4. Machine Learning 🤖:
+- Use machine learning to predict which links are most valuable or relevant to crawl next, optimizing the crawler’s efficiency.
+
+---
+
+🗨️ Possible Follow-Up Questions:
+
+1. How would you design the system to avoid being blocked by websites (e.g., IP blocking or CAPTCHAs)?
+2. What if a website dynamically generates links using JavaScript? How would you handle crawling such pages?
+3. How would you handle different languages and encoding issues on websites?

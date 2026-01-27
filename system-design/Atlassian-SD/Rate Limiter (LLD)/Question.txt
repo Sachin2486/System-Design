@@ -1,0 +1,46 @@
+🎯 Rate Limiter Design Challenge (LLD) 🎯
+
+🛠️ Scenario:
+You're tasked with designing a Rate Limiter for a high-traffic service.
+The system should allow "X requests in Y seconds" per user. If the rate exceeds the limit, any further requests should be blocked
+for the remaining duration.
+
+Your solution must be scalable, thread-safe, and flexible to accommodate different rate-limiting strategies in the future! 🌐
+
+📝 Requirements:
+
+1. Functional:
+- ✅ Handle X requests per Y seconds.
+- ❌ Block requests when the limit is exceeded.
+- 📈 Should allow extending the solution to different rate-limiting strategies.
+
+2. Non-Functional:
+- ⚡ Low-latency response for high-volume requests.
+- 📊 Ability to support millions of users.
+- 🧵 Must be thread-safe for concurrent access.
+
+🚨 Your Tasks:
+1. 👩‍💻 Interface Design:
+- Create a generic interface (e.g., `RateLimiter`) for different algorithms like Sliding Window, Fixed Window, or Token Bucket.
+
+2. 💻 Implementation:
+- Implement one rate-limiting algorithm of your choice:
+- 🔒 Fixed Time Window (Simpler, but edge cases exist).
+- 🔄 Sliding Window (More precise, but requires careful design).
+- 🪣 Token Bucket (Good for smoothing request bursts).
+
+3. 🔧 Extendability:
+- Think about how you can make this rate limiter extensible for future needs:
+- 💡 Allow for new rate-limiting algorithms.
+- ⚙️ Consider configuration-based limits (e.g., different limits for different APIs or users).
+
+4. 📈 Edge Cases:
+- What happens if Y = 1 second? How do you handle multiple requests within this tiny time window?
+- How would you deal with distributed systems? Would you share the state across multiple services?
+
+🚀 Bonus Questions (If time permits!):
+1. 🔍 Real-World System Design:
+- How would you scale this rate limiter using Redis, databases, or in-memory caches? Discuss distributed architectures! 🌍
+
+2. 🛠️ Implementation Strategy:
+- Can your design handle different thresholds for different endpoints or users? How would you achieve that flexibility?

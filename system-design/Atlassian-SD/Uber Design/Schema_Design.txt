@@ -1,0 +1,173 @@
+To design the database for the Uber-like ride-hailing system, we need to define the key entities and their relationships,
+ focusing on scalability and efficiency. Here's the detailed database schema with explanations for each table:
+
+ 1. Users Table
+This table stores information about both riders and drivers.
+Since both users and drivers share some common attributes, we use a single table to differentiate between roles.
+
+| Column Name      | Data Type    | Description                                                    |
+|------------------|--------------|----------------------------------------------------------------|
+| `user_id`        | INT (PK)     | Unique identifier for the user (Auto-incremented).             |
+| `name`           | VARCHAR(100) | Name of the user.                                              |
+| `email`          | VARCHAR(100) | Email of the user (Unique, required for login).                |
+| `phone_number`   | VARCHAR(15)  | Phone number for contact.                                      |
+| `role`           | ENUM('rider', 'driver') | Specifies whether the user is a rider or driver. |
+| `password_hash`  | VARCHAR(255) | Hashed password for secure login.                              |
+| `rating`         | FLOAT        | The average rating of the user (relevant for drivers).         |
+| `created_at`     | DATETIME     | When the user account was created.                             |
+| `updated_at`     | DATETIME     | Last updated timestamp.                                        |
+
+Indexes:
+- Index on `email` for faster lookups.
+- Index on `role` for filtering between riders and drivers.
+
+ 2. Vehicles Table
+This table stores vehicle details for drivers.
+
+| Column Name      | Data Type    | Description                                                    |
+|------------------|--------------|----------------------------------------------------------------|
+| `vehicle_id`     | INT (PK)     | Unique identifier for the vehicle.                             |
+| `driver_id`      | INT (FK)     | Foreign key referencing the `user_id` of the driver.           |
+| `license_plate`  | VARCHAR(20)  | Vehicle’s license plate number.                                |
+| `model`          | VARCHAR(100) | The model of the vehicle (e.g., Toyota Prius).                 |
+| `color`          | VARCHAR(50)  | Color of the vehicle.                                          |
+| `year`           | INT          | Year of manufacture.                                           |
+| `created_at`     | DATETIME     | When the vehicle record was created.                           |
+| `updated_at`     | DATETIME     | Last updated timestamp.                                        |
+
+Indexes:
+- Index on `driver_id` for fast lookup of a driver’s vehicle.
+
+ 3. Rides Table
+This table stores details of each ride request made by a rider.
+
+| Column Name      | Data Type    | Description                                                    |
+|------------------|--------------|----------------------------------------------------------------|
+| `ride_id`        | INT (PK)     | Unique identifier for the ride.                                |
+| `rider_id`       | INT (FK)     | Foreign key referencing the `user_id` of the rider.            |
+| `driver_id`      | INT (FK)     | Foreign key referencing the `user_id` of the driver (nullable).|
+| `vehicle_id`     | INT (FK)     | Foreign key referencing `vehicle_id` (nullable).               |
+| `pickup_lat`     | DECIMAL(10,7)| Latitude for the pickup location.                              |
+| `pickup_lng`     | DECIMAL(10,7)| Longitude for the pickup location.                             |
+| `dropoff_lat`    | DECIMAL(10,7)| Latitude for the drop-off location.                            |
+| `dropoff_lng`    | DECIMAL(10,7)| Longitude for the drop-off location.                           |
+| `status`         | ENUM('requested', 'accepted', 'in_progress', 'completed', 'cancelled') | Current status of the ride. |
+| `fare`           | DECIMAL(10, 2)| Total fare for the ride (nullable until completed).            |
+| `payment_status` | ENUM('pending', 'paid', 'failed') | Status of the payment transaction.         |
+| `requested_at`   | DATETIME     | When the ride was requested.                                   |
+| `completed_at`   | DATETIME     | When the ride was completed (nullable).                        |
+| `created_at`     | DATETIME     | When the ride entry was created.                               |
+
+Indexes:
+- Composite index on `rider_id` and `status` for fast lookups on rider’s ride history.
+- Index on `driver_id` to quickly retrieve driver’s current or past rides.
+- Geo-indexing on `pickup_lat` and `pickup_lng` to optimize ride matching based on location.
+
+ 4. Driver_Locations Table (for Real-Time Tracking)
+This table stores real-time location updates for drivers, which can be queried frequently for ride matching.
+
+| Column Name      | Data Type    | Description                                                    |
+|------------------|--------------|----------------------------------------------------------------|
+| `driver_id`      | INT (PK)     | Foreign key referencing the `user_id` of the driver.            |
+| `current_lat`    | DECIMAL(10,7)| Current latitude of the driver.                                |
+| `current_lng`    | DECIMAL(10,7)| Current longitude of the driver.                               |
+| `last_updated`   | DATETIME     | Timestamp for when the location was last updated.              |
+
+Indexes:
+- Index on `current_lat` and `current_lng` to efficiently search for nearby drivers.
+- Consider using a spatial indexing method like Quadtrees or Geohashing to make querying by location faster.
+
+ 5. Payments Table
+This table tracks payment transactions for completed rides.
+
+| Column Name      | Data Type    | Description                                                    |
+|------------------|--------------|----------------------------------------------------------------|
+| `payment_id`     | INT (PK)     | Unique identifier for the payment.                             |
+| `ride_id`        | INT (FK)     | Foreign key referencing the `ride_id`.                         |
+| `amount`         | DECIMAL(10,2)| Total amount paid for the ride.                                |
+| `payment_method` | ENUM('credit_card', 'paypal', 'cash') | Method of payment.          |
+| `status`         | ENUM('pending', 'successful', 'failed') | Payment status.             |
+| `transaction_id` | VARCHAR(100) | External payment processor transaction ID (e.g., Stripe).      |
+| `created_at`     | DATETIME     | When the payment record was created.                           |
+
+Indexes:
+- Index on `ride_id` for linking rides and payments.
+- Index on `status` to filter successful or pending payments quickly.
+
+ 6. Ratings and Feedback Table
+This table stores the ratings and feedback after each completed ride.
+
+| Column Name      | Data Type    | Description                                                    |
+|------------------|--------------|----------------------------------------------------------------|
+| `rating_id`      | INT (PK)     | Unique identifier for the rating.                              |
+| `ride_id`        | INT (FK)     | Foreign key referencing the `ride_id`.                         |
+| `rider_id`       | INT (FK)     | Foreign key referencing the `user_id` of the rider.            |
+| `driver_id`      | INT (FK)     | Foreign key referencing the `user_id` of the driver.           |
+| `rating`         | INT          | Rating score (e.g., 1 to 5).                                   |
+| `feedback`       | TEXT         | Optional feedback from the rider.                              |
+| `created_at`     | DATETIME     | When the rating was submitted.                                 |
+
+Indexes:
+- Index on `ride_id` to quickly retrieve ratings and feedback for a specific ride.
+- Index on `driver_id` to quickly aggregate driver ratings for average score calculations.
+
+ 7. Notifications Table
+(Optional) This table tracks notifications sent to users, such as ride status updates or promotional offers.
+
+| Column Name      | Data Type    | Description                                                    |
+|------------------|--------------|----------------------------------------------------------------|
+| `notification_id`| INT (PK)     | Unique identifier for the notification.                        |
+| `user_id`        | INT (FK)     | Foreign key referencing the `user_id`.                         |
+| `message`        | TEXT         | The notification message content.                              |
+| `type`           | ENUM('ride_status', 'promotion', 'system_alert') | Type of notification.        |
+| `sent_at`        | DATETIME     | Timestamp for when the notification was sent.                  |
+
+
+Additional Design Considerations With Medium Links :
+
+Here’s a list of Medium articles along with an explanation of how each concept is
+implemented in the design of an Uber-like ride-hailing system:
+
+
+1. Geo-Indexing
+- [GeoSpatial Indexing with MongoDB: A Beginner’s Guide](https://medium.com/geekculture/geospatial-indexing-with-mongodb-a-beginners-guide-5266727d6a0b)
+Implementation: Use geospatial indexing in MongoDB or another spatial database to efficiently match drivers with riders based on proximity.
+This helps optimize real-time driver searches when a rider requests a ride.
+
+- [Geospatial Queries and Indexing in PostgreSQL](https://medium.com/codex/geospatial-queries-and-indexing-in-postgresql-dba33a6e528)
+Implementation: Apply geospatial queries and PostGIS extensions in PostgreSQL to store and query driver and rider locations using latitude and longitude. Use R-trees or Quadtrees for faster location-based queries.
+
+
+
+2. Replication and Sharding
+- [Database Sharding — An In-depth Introduction](https://medium.com/@neokree/database-sharding-an-in-depth-introduction-bb979ff9c43a)
+Implementation: Shard the database by geographic regions (e.g., cities or countries) to distribute the load,
+allowing better scalability as the number of users and drivers increases globally. Each shard would manage local ride data.
+
+- [Database Replication: How it works and why it matters](https://medium.com/swlh/database-replication-how-it-works-and-why-it-matters-927c7db4cda)
+Implementation: Use master-slave replication to ensure high availability of user, ride, and payment data.
+ The master node handles writes, while read-heavy queries (like searching for past rides) are directed to the slave nodes.
+
+3. Caching
+- [Introduction to Caching in Distributed Systems](https://medium.com/expedia-group-tech/introduction-to-caching-in-distributed-systems-89b5e4a517ea)
+Implementation: Use Redis to cache frequently accessed data, such as the list of nearby drivers for a rider’s location.
+This reduces database query load and enhances performance, especially during peak usage.
+
+- [Caching Patterns: A Detailed Overview](https://medium.com/@lakshminarayanansubramanian/caching-patterns-a-detailed-overview-c009a13b193d)
+Implementation: Implement a write-through cache for storing real-time driver location updates so that both cache and database
+stay in sync. This reduces latency in fetching real-time location data.
+
+
+
+4. Message Queues
+- [Message Queues in Microservices: An Introduction](https://medium.com/swlh/message-queues-in-microservices-an-introduction-14ef8885c3a3)
+Implementation: Use Kafka or RabbitMQ for handling asynchronous tasks like ride status updates, push notifications,
+or payment processing. When a ride request is made, the system pushes tasks (such as notifying the driver)
+to a message queue for processing without blocking the main application.
+
+- [Kafka vs RabbitMQ: Understanding Message Queues](https://medium.com/better-programming/kafka-vs-rabbitmq-understanding-message-queues-5a2ed91e0d99)
+Implementation: Use Kafka for high-throughput use cases, like streaming driver location updates to track real-time movement,
+and RabbitMQ for smaller, mission-critical tasks like payment processing or notification handling.
+
+These articles should give you a solid understanding of how to incorporate advanced design patterns into your Uber-like ride-hailing system.
+Each pattern helps improve scalability, performance, and reliability.

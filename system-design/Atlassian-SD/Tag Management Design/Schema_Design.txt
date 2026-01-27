@@ -1,0 +1,148 @@
+Here’s a detailed explanation for each table in the Tag Management System schema,
+highlighting its role and importance in the overall system:
+
+---
+
+1. Users Table
+
+| Column        | Data Type        | Constraints                                  | Description                               |
+|---------------|------------------|----------------------------------------------|-------------------------------------------|
+| `id`          | UUID             | Primary Key, Auto-generated                  | Unique identifier for each user           |
+| `name`        | VARCHAR(255)     | NOT NULL                                     | Name of the user                          |
+| `email`       | VARCHAR(255)     | NOT NULL, Unique                             | Email address of the user                 |
+| `role`        | ENUM('Admin', 'Developer', 'Content Creator') | NOT NULL | Role of the user (defines permissions)    |
+| `created_at`  | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP                    | Timestamp of when the user was created    |
+| `updated_at`  | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP, Updated on Change | Timestamp of the last update              |
+
+Explanation:
+- Purpose: This table stores the basic user information such as name, email, and role. The role is crucial as it defines the actions users can perform (Admins can create/manage tags, Developers and Content Creators can only apply tags).
+- Key Columns:
+- `role` helps in role-based access control (RBAC) where different user types have different permissions.
+- `email` is unique to ensure there are no duplicates when users log in.
+
+---
+
+2. Tags Table
+
+| Column         | Data Type        | Constraints                                  | Description                                       |
+|----------------|------------------|----------------------------------------------|---------------------------------------------------|
+| `id`           | UUID             | Primary Key, Auto-generated                  | Unique identifier for each tag                    |
+| `name`         | VARCHAR(255)     | NOT NULL, Unique                             | Name of the tag                                   |
+| `description`  | TEXT             | NULLABLE                                     | Optional description of the tag                   |
+| `status`       | ENUM('Active', 'Inactive') | NOT NULL                    | Status of the tag (Active or Inactive)            |
+| `category_id`  | UUID             | Foreign Key (references Tag Categories)       | Category to which the tag belongs                 |
+| `parent_tag_id`| UUID             | Foreign Key (Self-referencing)               | Reference for hierarchical (parent-child) tags    |
+| `created_at`   | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP                    | Timestamp of when the tag was created             |
+| `updated_at`   | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP, Updated on Change | Timestamp of the last update to the tag           |
+
+Explanation:
+- Purpose: This table stores details of each tag, including its name, status (whether it is active or inactive),
+and hierarchical relationships between tags (parent-child structure). The `category_id` associates tags with a specific category for better organization.
+- Key Columns:
+- `status` allows administrators to deactivate unused tags.
+- `parent_tag_id` enables the system to support hierarchical tags.
+- `category_id` links each tag to a specific category, making it easier to filter tags.
+
+---
+
+3. Tag Categories Table
+
+| Column        | Data Type        | Constraints                                  | Description                                       |
+|---------------|------------------|----------------------------------------------|---------------------------------------------------|
+| `id`          | UUID             | Primary Key, Auto-generated                  | Unique identifier for each category               |
+| `name`        | VARCHAR(255)     | NOT NULL, Unique                             | Name of the tag category                          |
+| `description` | TEXT             | NULLABLE                                     | Optional description of the category              |
+| `created_at`  | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP                    | Timestamp of when the category was created        |
+| `updated_at`  | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP, Updated on Change | Timestamp of the last update to the category      |
+
+Explanation:
+- Purpose: Tag categories group tags together, improving searchability and management of large numbers of tags.
+ This is particularly useful in systems with thousands of tags.
+- Key Columns:
+- `name` allows categorization of tags (e.g., "Priority Tags," "Feature Tags").
+- `description` provides additional information about the category, which can help with search and understanding its purpose.
+
+---
+
+4. Tag Associations Table
+
+| Column        | Data Type        | Constraints                                  | Description                                       |
+|---------------|------------------|----------------------------------------------|---------------------------------------------------|
+| `id`          | UUID             | Primary Key, Auto-generated                  | Unique identifier for each association            |
+| `tag_id`      | UUID             | Foreign Key (references Tags)                | Tag being associated                              |
+| `entity_type` | ENUM('JIRA', 'Confluence') | NOT NULL                    | The type of entity the tag is associated with     |
+| `entity_id`   | UUID             | NOT NULL                                     | Identifier of the JIRA issue or Confluence page   |
+| `created_at`  | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP                    | Timestamp of when the association was created     |
+
+Explanation:
+- Purpose: This table tracks the relationship between tags and entities (JIRA issues or Confluence pages).
+Each record represents a tag being applied to a specific entity.
+- Key Columns:
+- `tag_id` references the tag being applied.
+- `entity_type` and `entity_id` store the type and ID of the entity (JIRA issue or Confluence page) to which the tag is linked.
+
+---
+
+5. Permissions Table
+
+| Column        | Data Type        | Constraints                                  | Description                                       |
+|---------------|------------------|----------------------------------------------|---------------------------------------------------|
+| `id`          | UUID             | Primary Key, Auto-generated                  | Unique identifier for each permission entry       |
+| `role`        | ENUM('Admin', 'Developer', 'Content Creator') | NOT NULL | The role that the permission applies to           |
+| `action`      | VARCHAR(255)     | NOT NULL                                     | Action the role is allowed to perform (e.g., 'Create Tag', 'Delete Tag') |
+| `created_at`  | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP                    | Timestamp of when the permission was granted      |
+
+Explanation:
+- Purpose: This table defines what actions each role is allowed to perform.
+It is essential for implementing role-based access control (RBAC) within the system.
+- Key Columns:
+- `role` and `action` specify which actions (like creating, updating, or deleting tags) a user with a certain role is allowed to perform.
+
+---
+
+6. Notifications Table
+
+| Column        | Data Type        | Constraints                                  | Description                                       |
+|---------------|------------------|----------------------------------------------|---------------------------------------------------|
+| `id`          | UUID             | Primary Key, Auto-generated                  | Unique identifier for each notification           |
+| `user_id`     | UUID             | Foreign Key (references Users)               | User receiving the notification                   |
+| `message`     | TEXT             | NOT NULL                                     | The content of the notification                   |
+| `status`      | ENUM('Sent', 'Read') | NOT NULL                                  | Status of the notification                        |
+| `created_at`  | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP                    | Timestamp of when the notification was created    |
+
+Explanation:
+- Purpose: This table handles notifications related to tag creation, updates, and deletions. Users receive notifications when relevant events occur, ensuring they stay informed.
+- Key Columns:
+- `user_id` specifies which user receives the notification.
+- `status` tracks whether the notification has been read by the user.
+
+---
+
+7. Audit Logs Table
+
+| Column        | Data Type        | Constraints                                  | Description                                       |
+|---------------|------------------|----------------------------------------------|---------------------------------------------------|
+| `id`          | UUID             | Primary Key, Auto-generated                  | Unique identifier for each audit log              |
+| `action`      | VARCHAR(255)     | NOT NULL                                     | Description of the action (e.g., create, update)  |
+| `user_id`     | UUID             | Foreign Key (references Users)               | The user who performed the action                 |
+| `tag_id`      | UUID             | Foreign Key (references Tags)                | The tag that was affected                         |
+| `timestamp`   | TIMESTAMP        | DEFAULT CURRENT_TIMESTAMP                    | Timestamp of the action                           |
+
+Explanation:
+- Purpose: This table tracks all changes made to tags. It captures actions like tag creation,
+ modification, and deletion, along with who performed the action. It’s essential for auditing and compliance.
+- Key Columns:
+- `user_id` and `tag_id` help identify which user made a change to which tag.
+- `action` describes the type of operation performed (e.g., "Create Tag," "Update Tag").
+
+
+Extra Reading Guide :
+
+Role-Based Access Control (RBAC)
+"Implementing Role-Based Access Control (RBAC) in a REST API"
+This guide covers how to implement RBAC, including assigning permissions based on user roles, which is crucial for managing Admin, Developer, and Content Creator roles in your system.
+Link: Implementing RBAC in REST API(https://medium.com/@atarax/a-comprehensive-guide-on-role-based-access-control-rbac-introduction-part-1-a3a654b0e1c8)
+
+"How to Design a Scalable Permissions System for Your Application"
+Dive into scalable design patterns for user roles and permissions, focusing on building a permissions system that can grow with your application.
+Link: Scalable Permissions System (https://medium.com/javarevisited/how-to-design-a-permission-system-you-can-do-this-8bc697d5869b)

@@ -1,0 +1,92 @@
+Here is a detailed DB schema design for the Favorite Color Picker App, covering the necessary tables, entities, and their respective schemas:
+
+---
+
+1. Users Table
+This table stores user information and credentials.
+
+| Column      | Data Type | Description                           |
+|-----------------|---------------|-------------------------------------------|
+| id              | UUID          | Primary key, unique identifier for each user |
+| name            | VARCHAR(100)  | User's name                               |
+| email           | VARCHAR(255)  | Unique, user’s email address              |
+| password        | VARCHAR       | Hashed password                           |
+| created_at      | TIMESTAMP     | Timestamp of account creation             |
+| updated_at      | TIMESTAMP     | Timestamp of last update                  |
+
+---
+
+2. Color Lists Table
+This table stores information about the color lists created by users.
+
+| Column      | Data Type  | Description                           |
+|-----------------|----------------|-------------------------------------------|
+| id              | UUID           | Primary key, unique identifier for each list |
+| user_id         | UUID           | Foreign key, reference to `Users.id`      |
+| list_name       | VARCHAR(255)   | Name of the color list                    |
+| colors          | JSONB          | JSON array of color values (e.g., hex codes) |
+| is_public       | BOOLEAN        | True if the list is public, false otherwise |
+| created_at      | TIMESTAMP      | Timestamp of list creation                |
+| updated_at      | TIMESTAMP      | Timestamp of last update                  |
+
+---
+
+3. Shared Access Table
+This table tracks access permissions for shared color lists.
+
+| Column      | Data Type  | Description                           |
+|-----------------|----------------|-------------------------------------------|
+| id              | UUID           | Primary key, unique identifier for each access record |
+| list_id         | UUID           | Foreign key, reference to `ColorLists.id` |
+| shared_with     | UUID           | Foreign key, reference to `Users.id` (the user who has access) |
+| permission_type | VARCHAR(50)    | Type of permission: "view" or "edit"      |
+| created_at      | TIMESTAMP      | Timestamp of sharing                      |
+
+---
+
+4. Audit Logs Table
+This table logs user actions such as adding, deleting, and sharing colors.
+
+| Column      | Data Type  | Description                           |
+|-----------------|----------------|-------------------------------------------|
+| id              | UUID           | Primary key, unique identifier for each log |
+| user_id         | UUID           | Foreign key, reference to `Users.id`      |
+| action          | VARCHAR(255)   | Description of the action (e.g., "added color", "deleted list") |
+| target_id       | UUID           | ID of the color list or color affected by the action |
+| timestamp       | TIMESTAMP      | Timestamp when the action occurred        |
+
+---
+
+5. Email Shares Table
+This table handles sharing color lists via email (for users not registered in the system).
+
+| Column      | Data Type  | Description                           |
+|-----------------|----------------|-------------------------------------------|
+| id              | UUID           | Primary key, unique identifier for each email share |
+| list_id         | UUID           | Foreign key, reference to `ColorLists.id` |
+| email           | VARCHAR(255)   | Email address to share the list with      |
+| access_token    | VARCHAR(255)   | Token to verify access for non-registered users |
+| created_at      | TIMESTAMP      | Timestamp of when the list was shared     |
+| expires_at      | TIMESTAMP      | Expiration time of the access token       |
+
+---
+
+6. Colors Table
+This table holds predefined color information, which can be reused across users.
+
+| Column      | Data Type  | Description                           |
+|-----------------|----------------|-------------------------------------------|
+| id              | UUID           | Primary key, unique identifier for each color |
+| color_code      | VARCHAR(10)    | Color code (e.g., hex, RGB)               |
+| color_name      | VARCHAR(255)   | Name of the color (e.g., “Sky Blue”)      |
+
+---
+
+Relationships between Entities
+- Users ↔ Color Lists: A user can have many color lists (`one-to-many`).
+- Color Lists ↔ Shared Access: A color list can be shared with many users with specific permissions (`many-to-many`).
+- Color Lists ↔ Audit Logs: Every action (add, delete, share) is logged (`one-to-many`).
+- Color Lists ↔ Email Shares: A color list can be shared via email to many non-registered users (`one-to-many`).
+- Colors ↔ Color Lists: Multiple color lists can contain the same color (`many-to-many` via the `colors` JSONB field or a relational `ColorLists_Colors` table if necessary).
+
+This schema allows for efficient management of color lists, user sharing, and access control, while also logging actions and handling non-registered users via email shares.

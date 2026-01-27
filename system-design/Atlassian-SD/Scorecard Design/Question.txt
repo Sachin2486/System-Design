@@ -1,0 +1,79 @@
+
+ 🛠️ System Design Question: Scorecard Management System 📝
+
+🧠 Problem Statement:
+
+You need to design a Scorecard Management System 🏆 that helps organizations evaluate people 👨‍🏫👩‍💼 (like employees, students, etc.)
+based on customized scorecards 📊. A scorecard will have sections 📚 and questions ❓, each with its own scoring rules.
+The system will be used by different types of users, such as Admins 👨‍💻, Evaluators 👩‍🏫, and regular Users 👩‍💼 to manage,
+fill out, and view scorecards.
+
+ 💡 Requirements:
+
+🔍 Functional Requirements:
+
+1. User Roles 👥:
+   - Admin 👨‍💼: Can create new scorecards 📝, add sections 📂 and questions ❓, assign evaluators 🕵️‍♀️, and manage permissions 🔑.
+   - Evaluator 👩‍🏫: Can fill out scorecards ✍️ for users based on predefined questions and sections.
+   - User 👩‍💻: Can view their scorecards 👀 after they have been finalized 🏁 by evaluators.
+
+2. Scorecard Lifecycle 🔄:
+   - Scorecards should have states 🛑: Draft ✍️, Submitted ✅, and Finalized 🏆.
+   - Admins can edit scorecards in the Draft state 📝.
+   - Evaluators can submit scorecards 📤, and Admins finalize them 🎯.
+
+3. Custom Scoring ⚖️:
+   - Scorecards should support different scoring rules 📐, such as:
+     - Weighted scores ⚖️ (some questions matter more 🏅).
+     - Different response types 💬 (numeric 🧮, text feedback 📝).
+4. Versioning & History 📜:
+   - The system must track all changes 🔄 to scorecards for auditing 📋, allowing users to see past versions 🔙.
+5. Search & Filters 🔍:
+   - Users should be able to filter 🗂️ scorecards based on criteria like date 🗓️, evaluator 👩‍🏫, or scorecard status 🏁.
+6. Notifications 🔔:
+   - Users should receive notifications 📩 when their scorecards are submitted or finalized 🎉.
+
+⚙️ Non-Functional Requirements:
+
+1. Scalability 🚀:
+   - The system should be able to handle thousands of scorecards 🧮 being created and updated daily 📅.
+2. Availability ⏱️:
+   - Ensure 99.9% uptime 🌍, supporting users globally 🌐.
+3. Low Latency ⚡:
+   - The system should respond quickly 🏃, with most requests finishing in less than 200ms ⏳.
+4. Security 🔒:
+   - Secure sensitive data 🔑, ensuring score data is encrypted 🔐 in transit and at rest 🛌.
+5. Auditability 🕵️‍♀️:
+   - Log every action 🚶 (creating, updating, finalizing) for auditing and compliance 👮‍♂️ purposes.
+
+ 🌐 API Design:
+
+Design the RESTful APIs 🌍 to manage users, scorecards, sections, and questions 📋. Your APIs should support the following:
+
+- User Authentication 🔑: APIs for login 🛂, registration 📝, and role-based access control 🛡️.
+- Scorecard Management 📋: APIs to create 📝, update 🔄, submit 📤, and delete scorecards ❌.
+- Report Generation 📊: APIs to generate reports 📈 based on scorecards, filtered by users 👥, date ranges 🗓️, and evaluation status 🏆.
+
+ 🗃️ Database Design:
+
+Create a schema 💽 to handle the following entities:
+1. Users 👤:
+   - Store user info 🧑‍💼 (name, email) and roles (Admin, Evaluator, User).
+2. Scorecards 📊:
+   - Store the details of each scorecard 📋, including title, sections, and status 🔄.
+3. Sections & Questions 🔢:
+   - Each section 📂 should link to its respective scorecard 📊, and each question ❓ should link to a section.
+4. Scores 🧮:
+   - Track evaluator responses ✍️ to each question, including numeric answers 🔢 and feedback 📝.
+5. Audit Logs 📝:
+   - Track every change 🔄 made to scorecards and their sections for audit purposes 🔎.
+
+
+
+🔍 Use Case Queries:
+
+Write SQL queries 🧑‍💻 to solve the following:
+
+1. Retrieve all scorecards for an evaluator 🕵️‍♀️ within a specific date range 📅.
+2. Fetch sections and questions for a scorecard 📊.
+3. Generate reports 📊 showing the score distribution for a set of users 👥.

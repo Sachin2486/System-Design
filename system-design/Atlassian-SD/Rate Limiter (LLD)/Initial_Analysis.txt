@@ -1,0 +1,109 @@
+⏳ 0–5 mins: Clarify the Problem (💬 Ask Questions)
+
+1. Understand the Core Requirements:
+- 🧑‍💼: "Are we limiting `X requests in Y seconds` for every user?"
+- "Should this rate limiter be flexible enough for different users or APIs?"
+
+2. Non-functional Requirements:
+- 🏎️: "Is this system expected to handle high traffic?"
+- 🧵: "Do we need to consider thread-safety and concurrency?"
+
+3. Edge Case Clarifications:
+- "What happens if a user sends multiple requests in the same second?"
+- "Do we need to consider distributed systems?"
+
+
+
+⏳ 5–10 mins: High-Level System Design (📝 Layout the Plan)
+
+1. High-Level Architecture:
+- 🔧 "We'll design a rate limiter component that tracks requests and decides if they should be allowed or blocked."
+- Introduce a RateLimiter Interface 🎛️ that can have multiple implementations like:
+- Sliding Window ⏳
+- Fixed Window 🗓️
+- Token Bucket 🪣
+
+2. Extendability:
+- 🧩 "We should design the system to support future algorithms, so we can easily swap between them or add new ones."
+
+
+
+⏳ 10–20 mins: Interface & Design (🛠️ Structuring It)
+
+1. Define the Core Methods:
+- 🟢 allowRequest: Determines whether the request can be processed.
+- 📝 trackRequest: Tracks user requests by storing timestamps.
+
+2. Explain Different Algorithms:
+- Sliding Window ⏳: Tracks requests within a rolling time frame.
+- Fixed Window 🗓️: Uses simple time intervals but could allow bursts near the boundary.
+- Token Bucket 🪣: Smoothes traffic and controls burst requests.
+
+3. How to Extend:
+- 🛠️ Make each algorithm an implementation of the RateLimiter Interface for modularity and future flexibility.
+
+
+
+⏳ 20–40 mins: Designing an Algorithm (Without Code!) (💭)
+
+1. Choose One Algorithm:
+- 🎯 Pick Sliding Window or another algorithm and explain how it would work:
+- 🕐 "We'll track timestamps for each request and remove old ones as they fall out of the window."
+- ⏳ "Requests in the last X seconds will determine whether to allow or block new ones."
+
+2. Describe the Flow:
+- 🛤️ "Each request comes in, we check if it fits within the allowed limit based on timestamps."
+- 🗑️ "If a request is outside the window, we discard it. If within the limit, we accept it."
+
+3. Handle Edge Cases:
+- 🚫 "If multiple requests come in within the same second, we handle that by counting only those in the active window."
+- 🌍 "For distributed systems, we can use shared state like Redis to synchronize limits across nodes."
+
+
+
+⏳ 40–50 mins: Extendability & Scalability (🌐 Think Bigger)
+
+1. Discuss Future-Proofing:
+- 🔧 "We can extend the system to handle different algorithms by adding new classes that implement the RateLimiter Interface."
+- 📜 "This would allow rules to be configured dynamically, based on different user types or endpoints."
+
+2. Scaling to Distributed Systems:
+- 🌍 "In a distributed system, we need a central place to store request data. For this, we could use Redis or another fast data store."
+- 🔄 "To prevent inconsistencies, we could use locks or consistent hashing to manage rate limits across multiple nodes."
+
+
+
+⏳ 50–55 mins: Real-World Examples & Testing (🔍 Application)
+
+1. Describe Real-World Use:
+- 💡 "In a real system, we'd probably implement rate limiting using in-memory caching for speed."
+- 🛠️ "For persistent storage, we'd rely on distributed caches like Redis to ensure users are limited across multiple servers."
+
+2. Testing & Validation:
+- 🧪 "We can unit test by simulating multiple users and requests. Stress tests can ensure the system holds up under high load."
+
+
+
+⏳ 55–60 mins: Wrap-Up & Ask for Feedback (🎤 Final Thoughts)
+
+1. Summarize:
+- 📊 "We designed a modular rate limiter that can be extended with new algorithms, handles concurrency, and scales for distributed systems."
+- 🧩 "It’s flexible, so we can easily swap algorithms and configure limits dynamically."
+
+2. Ask for Feedback:
+- "Would you like me to expand on any part of the design or discuss any specific areas further?"
+
+
+Summary of Time Allocation
+
+| Activity                               | Time (minutes)  |
+|----------------------------------------|-----------------|
+| Introduction                           | 5               |
+| Problem Statement Clarification        | 5               |
+| High-Level Design Discussion           | 15              |
+| API Design                             | 10              |
+| Database Design                        | 10              |
+| Non-Functional Requirements            | 5               |
+| Use Case Queries                       | 5               |
+| Wrap-up and Questions                  | 5               |
+| Total                                  | 60              |

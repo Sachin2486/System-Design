@@ -1,0 +1,41 @@
+Detailed Breakdown of the Code:
+
+1. SlidingWindowRateLimiter Class:
+- This class manages rate-limiting logic using a sliding window algorithm.
+- It has two main properties:
+- maxRequests: The maximum number of allowed requests (X) in the given time window.
+- windowSizeInMillis: The size of the time window in milliseconds (Y seconds).
+- A userRequestMap keeps track of each user's request timestamps using a Queue (FIFO).
+
+2. Constructor:
+- The constructor takes the maximum number of requests and the time window as input, initializing the necessary variables.
+
+3. allowRequest Method:
+- This method checks whether the user can make a new request at the given time.
+- It removes old requests that are outside the time window (older than Y seconds).
+- It allows the request if the user hasn't exceeded the request limit in the current window, otherwise, it blocks the request.
+
+4. handleRequest Method:
+- A helper method that simulates a user making a request and prints whether the request was allowed or denied.
+
+5. main Method:
+- A simple test case where we create a rate limiter that allows 3 requests every 10 seconds.
+- It simulates a user making requests and demonstrates the behavior of the rate limiter.
+- It includes a 10-second sleep to simulate time passing and show the reset of the rate window.
+
+
+
+How it Works:
+- When a user makes a request, their timestamp is added to a queue.
+- Every time a new request comes in, we:
+- Remove old requests that are outside the time window (older than Y seconds).
+- Check if the number of requests in the current window exceeds the limit.
+- If the user is within the allowed limit, we allow the request. Otherwise, we deny it.
+
+Edge Cases Handled:
+- Old requests removal: Requests older than the window size (Y seconds) are automatically removed.
+- Rate limit exceed: If the user exceeds the limit, the request is blocked.
+- Scalability: The use of a queue ensures we only keep relevant requests within the time window, making it memory efficient.
+
+Extendability:
+- You can easily add more rate-limiting algorithms (like Fixed Window or Token Bucket) by implementing them in a similar way and potentially using a common interface.

@@ -1,0 +1,103 @@
+1. Clarify the Problem (5 minutes):
+- Start by clarifying the scope of the question:
+- Are we integrating with existing JIRA and Confluence systems or building the tag management from scratch?
+- Should we assume that the user base is already set in JIRA/Confluence?
+- How important is performance under scale, and what does "thousands of tags" specifically mean (hundreds of thousands of associations)?
+- Confirm that notifications should go through existing platforms (JIRA/Confluence), or should we introduce custom notifications?
+- Ask any necessary clarifications about edge cases:
+- What should happen when a tag is deactivated but is already associated with issues/pages?
+
+2. Outline the Approach (5-10 minutes):
+- User Roles & Permissions:
+- Start with the user roles: Admins, Developers, and Content Creators.
+- How different permissions will map to actions like creating tags, applying tags, and deactivating tags.
+- Tag Lifecycle & Tagging Rules:
+- Discuss how tags transition from "Active" to "Inactive."
+- Briefly mention the multi-select tagging feature and the potential for parent-child relationships (hierarchical tags).
+- Search & Filtering:
+- Explain how users will search for and filter tags using metadata such as category, usage frequency, or hierarchy.
+- Notifications:
+- Describe how users will be notified (push, email, or in-app notifications) when tags are modified or removed.
+
+3. API Design (10-15 minutes):
+- User Authentication & Role Management:
+- RESTful APIs for login, registration, and role-based access control.
+- Example endpoints:
+- `POST /login`
+- `GET /roles`
+- Tag Management:
+- CRUD APIs for creating, updating, deactivating, and deleting tags.
+- Example endpoints:
+- `POST /tags`: Create new tags (Admins only).
+- `PUT /tags/{id}`: Update tags.
+- `DELETE /tags/{id}`: Deactivate tags.
+- Tag Association:
+- APIs to link tags to JIRA issues or Confluence pages.
+- Example endpoints:
+- `POST /tags/associate`: Associate tags with JIRA issues or Confluence pages.
+- `GET /tags/{entityId}`: Get tags for a specific issue or page.
+
+4. Database Schema Design (10-15 minutes):
+- Entities:
+- Users table: `id`, `name`, `email`, `role`
+- Tags table: `id`, `name`, `description`, `status`
+- Tag Associations table: `tag_id`, `entity_type` (JIRA/Confluence), `entity_id`
+- Audit Logs table: `action`, `user_id`, `timestamp`, `tag_id`
+- ER Diagram:
+- Quickly sketch the relationships between users, tags, tag associations, and audit logs.
+- Highlight the one-to-many relationship between tags and JIRA/Confluence entities.
+
+5. Non-Functional Requirements (5-10 minutes):
+- Scalability:
+- Discuss horizontal scaling strategies, including database sharding for tags and caching frequently queried tags.
+- Availability:
+- Consider using distributed databases or replication to ensure high availability.
+- Ensure failover mechanisms are in place (e.g., for database or API failures).
+- Latency:
+- Use techniques such as query optimization, caching (Redis, Memcached), and indexing for fast tag search and retrieval.
+- Security:
+- Emphasize role-based access control, API authentication (JWT, OAuth), and encryption of sensitive data (SSL/TLS).
+- Auditability:
+- Mention the importance of logging all tag actions (creation, updates, deletions) for traceability.
+
+6. Use Case Queries (5-10 minutes):
+- Write SQL queries for the use cases:
+1. Retrieve all tags used in a specific JIRA project:
+```sql
+SELECT t.name FROM tags t
+JOIN tag_associations ta ON t.id = ta.tag_id
+WHERE ta.entity_type = 'JIRA' AND ta.entity_id = <JIRA_PROJECT_ID>;
+```
+2. Fetch tags associated with a specific Confluence page:
+```sql
+SELECT t.name FROM tags t
+JOIN tag_associations ta ON t.id = ta.tag_id
+WHERE ta.entity_type = 'Confluence' AND ta.entity_id = <PAGE_ID>;
+```
+3. Generate report of tag usage frequency across projects:
+```sql
+SELECT t.name, COUNT(ta.tag_id) as usage_count
+FROM tags t
+JOIN tag_associations ta ON t.id = ta.tag_id
+GROUP BY t.name
+ORDER BY usage_count DESC;
+```
+
+7. Q&A and Edge Cases (Remaining time):
+- Discuss how to handle tag conflicts, e.g., if two projects want the same tag name.
+- Handle the edge case of searching with large data sets and maintaining hierarchical tag integrity.
+
+
+Summary of Time Allocation
+
+| Activity                               | Time (minutes)  |
+|----------------------------------------|-----------------|
+| Introduction                           | 5               |
+| Problem Statement Clarification        | 5               |
+| High-Level Design Discussion           | 15              |
+| API Design                             | 10              |
+| Database Design                        | 10              |
+| Non-Functional Requirements            | 5               |
+| Use Case Queries                       | 5               |
+| Wrap-up and Questions                  | 5               |
+| Total                                  | 60              |

@@ -1,0 +1,9 @@
+Leetcode Link : https://leetcode.com/discuss/interview-experience/1795183/Atlassian-or-SDE-2-or-Remote-or-India
+
+System Design Round -
+Mantain calm and composure, they are not looking for a full proofed solution,
+start with gathering the Functional and Non Functional requirements,
+followed up with API Design including Protocols and followed by Database design.
+The interviewer would keep on asking questions regardin the implementation.
+You may or may not get a chance to discuss the high level diagram, but make sure to list down all the services involved.
+ Problem --> Design a tag management system for JIRA and Confluence, which is standard for Atlassian.

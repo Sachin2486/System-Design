@@ -1,0 +1,68 @@
+🧠 Problem Statement:
+
+You are tasked with designing the backend system for a Ride-Hailing Service (similar to Uber) 🚖,
+where users can book rides 🚗, drivers can accept or reject rides, and the system manages the entire flow from ride booking to payment.
+The focus is on designing the core functionalities like ride matching, driver and rider location updates,
+and trip management 🛣️, while ensuring the system can scale to handle a large number of riders and drivers globally 🌍.
+
+💡 Requirements:
+
+🔍 Functional Requirements:
+
+1. User Actions:
+   - Riders: Can request rides 🚖 by setting a pickup and drop-off location 📍.
+   - Drivers: Can accept or reject rides 📲.
+   - Ride Matching: The system should match riders with available nearby drivers 📍 based on factors like distance, driver rating, and ETA 🕒.
+   - Trip Management: Riders and drivers can view the trip status 🔄, update their location in real time 🗺️,
+     and receive live notifications 📳 (e.g., "Driver has arrived").
+
+2. Payment & Invoicing:
+   - Riders can pay for their trips digitally 💳, and an invoice/receipt 🧾 is generated after the ride.
+
+3. Ride History & Ratings:
+   - Both riders and drivers can view their ride history 📚 and provide ratings ⭐ and feedback after a trip 📝.
+
+⚙️ Non-Functional Requirements:
+
+1. Scalability:
+   - The system should support millions of active users globally 🌍, managing ride requests and driver location updates in real time ⏱️.
+
+2. Availability:
+   - Ensure high availability ⏳ with minimal downtime, even under heavy traffic 🚦.
+
+3. Low Latency:
+   - Ride matching and location updates should be processed with minimal delay 🏃‍♂️.
+
+4. Security:
+   - Ensure secure transactions 🔒 and protect personal information of riders and drivers 🛡️.
+
+🌐 API Design:
+
+Design the RESTful APIs 🌍 to manage riders, drivers, rides, and payments 💳. The APIs should support:
+
+- User Authentication: For both riders and drivers 🔑, including login, registration, and verification.
+- Ride Management: APIs to request rides 📝, update ride status 🔄, and handle trip details 🛣️.
+- Location Updates: Real-time API for sharing rider/driver location 📍 and updating trip status.
+- Payment Processing: APIs for managing digital payments 💳 and generating receipts.
+
+🗃️ Database Design:
+
+Create a schema to handle the following entities:
+
+1. Users (Riders & Drivers): Store personal details 🧑‍💻, location data 📍, and account status.
+2. Rides: Store ride details 🛣️, including pickup/drop-off locations 📍, fare 💵, and trip status.
+3. Vehicles: Track each driver's vehicle details 🚗, including license plate and car model.
+4. Payments: Store payment transactions 💳 and link them to completed trips 🧾.
+5. Ratings & Feedback: Track rider and driver ratings ⭐ and feedback for trip quality improvement 📊.
+
+🔍 Use Case Queries:
+
+Write SQL queries 🧑‍💻 to solve the following:
+
+1. Retrieve all rides taken by a specific rider within the last month 📅.
+2. Fetch all available drivers within a 5km radius of a rider's pickup location 🗺️.
+3. Generate a report 📊 showing the average rating for all drivers in a particular city 🏙️.
+
+
+
+This format keeps the question clear, focused on functionality, while ensuring it includes the necessary LLD details.

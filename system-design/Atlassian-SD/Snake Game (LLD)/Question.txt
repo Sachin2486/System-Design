@@ -1,0 +1,16 @@
+🐍 Snake Game Design Problem 🕹️
+
+Design a system for a classic snake game where the following rules apply:
+
+- 🐍 The snake can move in a specified direction (up, down, left, right).
+- 🍎 When the snake eats the food, it grows in length.
+- 🔁 The game ends when the snake crosses or collides with itself.
+- 🍴 Food is generated at regular intervals in random positions on the grid.
+
+Your task:
+- Design the data structures needed to represent the snake, food, and game board.
+- Implement the movement of the snake and ensure it correctly grows when food is eaten.
+- Detect when the snake crosses itself and trigger a game over.
+- Ensure that food is randomly placed and generated after specific intervals.
+
+How would you design and implement this game system? What edge cases would you consider?

@@ -1,0 +1,75 @@
+1. Clarify Requirements (5-10 minutes)
+- Start by clarifying the functional and non-functional requirements, asking questions like:
+- Can users create multiple color lists, or is it one list per user?
+- How is access control managed (e.g., role-based or per-list)?
+- What is the expected scale (number of users, list sizes, frequency of operations)?
+
+2. High-Level Architecture (10 minutes)
+- Backend Services: Explain the core services that handle user authentication, color list management, sharing, and access control.
+- Example:
+- Auth Service (JWT-based or OAuth2 for access control)
+- Color List Service (CRUD operations for lists)
+- Email Service (to send share links)
+- APIs: Discuss RESTful API design for the key features:
+- `POST /colors`: Save a color
+- `DELETE /colors/{colorId}`: Delete a color
+- `POST /share`: Share a list
+- `PATCH /permissions`: Set access control
+- Database Layer: Outline the core entities (Users, Color Lists, Shared Access, Audit Logs).
+- Data Models:
+- `User (id, name, email, role)`
+- `ColorList (id, userId, name, colors, access_control)`
+- `SharedAccess (listId, userId, permission)`
+- `AuditLogs (userId, action, timestamp)`
+
+3. Detailed Components (10-15 minutes)
+- User Actions: Describe how color list CRUD operations happen:
+- A user selects colors, which are stored in a NoSQL database (optimized for quick reads and writes).
+- Deletion involves flagging colors as inactive, providing soft-deletes for auditability.
+- Access Control: Use role-based permissions to restrict access. Explain how private lists are stored securely and only accessible to authorized users.
+- Sharing Logic: Once a list is shared, emails are sent with a unique link, enabling permissions to view/edit the list based on the recipient's user role.
+
+4. Scaling the System (10 minutes)
+- Load Balancing: Use a load balancer like NGINX or AWS ALB to distribute traffic between multiple instances of the app for high availability.
+- Database Sharding: Discuss horizontal sharding of the user-color lists if scale increases.
+- Caching: Introduce caching mechanisms (e.g., Redis) for frequently accessed color lists or permissions to reduce database load.
+- Asynchronous Processing: Implement queues (e.g., AWS SQS) to handle non-critical tasks like sharing emails or audit log processing asynchronously.
+
+5. Handling Non-Functional Requirements (5 minutes)
+- Availability: Implement replicas and failover strategies (e.g., multi-region deployment, database replication).
+- Security: Use HTTPS for data transmission, secure storage with encryption for sensitive data (e.g., shared list access).
+- Audit Logs: Store logs to track when users add, delete, or share lists, as well as when permissions change.
+
+6. Database Schema Design (5 minutes)
+- Sketch a simple ER diagram for the major tables (Users, Color Lists, Access Control).
+- Explain indexes on fields like `userId`, `listId` for faster queries.
+
+7. SQL Queries (5-7 minutes)
+- Retrieve all colors for a specific user:
+```sql
+SELECT colors FROM ColorList WHERE userId = ?;
+```
+- Fetch all users with access to a specific color list:
+```sql
+SELECT u.name FROM Users u JOIN SharedAccess sa ON u.id = sa.userId WHERE sa.listId = ?;
+```
+- Most commonly saved colors across all users:
+```sql
+SELECT color, COUNT(*) as frequency FROM ColorList CROSS APPLY UNNEST(colors) GROUP BY color ORDER BY frequency DESC;
+```
+
+8. Wrap-up and Trade-offs (5 minutes)
+- Mention any trade-offs made, such as:
+- Using NoSQL for speed vs. using SQL for transactionality.
+- Handling high availability via read replicas or CDNs.
+
+With this structure, you ensure a clear, methodical approach to the problem, covering both breadth (high-level architecture) and depth (specific components, database schema, and scaling strategies).
+
+Timing Breakdown:
+- Clarifications: 5-7 minutes
+- High-level Architecture: 8-10 minutes
+- Detailed Design of Components: 15-20 minutes
+- Scalability: 8-10 minutes
+- Edge Cases: 8-10 minutes
+- Trade-offs: 7-10 minutes
+- Conclusion: 2-3 minutes

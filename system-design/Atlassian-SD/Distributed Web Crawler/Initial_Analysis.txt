@@ -1,0 +1,138 @@
+🕒 Timeline and Structure:
+
+1. Clarifications (5–7 minutes)
+Goal: Set clear expectations and define the scope.
+- Clarify requirements: 
+- "What is the end goal?" – Are we storing or processing data? Should we extract metadata or raw HTML?
+- "What’s the scale?" – How many pages do we need to crawl? How many URLs per day/hour?
+- "What are the priorities?" – Is scalability, performance, or cost most critical?
+- "Is this real-time?" – Do we need to refresh crawled data periodically?
+- "Do we need to respect `robots.txt`?" – Should we strictly follow the rules?
+
+Example Questions:
+- "Are we building this for a search engine, or simply storing the raw HTML data?"
+- "What kind of failure tolerance should the system have?"
+- "Is there any expectation to handle login-protected content?"
+
+2. High-Level Architecture (8–10 minutes)
+Goal: Present the big picture of the system, focusing on components and data flow.
+- Describe the core components:
+1. URL Frontier (Queue for managing URLs to crawl).
+2. Crawler Manager (Assigns tasks to crawlers).
+3. Parsers (Extracts data and links from web pages).
+4. Data Storage (For metadata and content).
+5. Scheduler & Throttler (For respecting robots.txt, limiting request rate).
+6. Loop Detection & Deduplication (Avoid crawling the same URL).
+- Draw a high-level diagram (verbally describe):
+- How the URL frontier sends URLs to workers.
+- Crawlers fetching content and parsing data.
+- How data flows to storage and how loops are handled.
+
+Key phrases:
+- “Here’s the main architecture: we have a set of distributed crawlers managed by a central component, the URL frontier, which assigns URLs.”
+- "Each crawler fetches the page content, parses it for links, and sends new links back to the frontier queue, while avoiding loops."
+
+3. Diving into Specific Components (15–20 minutes)
+Goal: Go deeper into each component and discuss implementation details. This shows your ability to reason through technical decisions.
+- URL Frontier:
+- What data structure to use? (Queue, priority queue, etc.)
+- How to handle URL de-duplication? (HashSet, Bloom filters).
+- Scalability: How will this queue grow as the number of URLs grows?
+
+- Crawler Manager:
+- How will we handle parallel crawlers? (Goroutines, threads, or distributed systems like Kafka).
+- Fault tolerance: What happens if a crawler crashes?
+
+- Parsers:
+- Which libraries or tools to parse HTML (e.g., BeautifulSoup, regex)?
+- How will we extract links, metadata, and other relevant content from a page?
+
+- Data Storage:
+- For the raw HTML or metadata, should we use NoSQL (e.g., MongoDB for flexibility) or SQL (for structured data)?
+- Key-value stores like Redis for URL tracking and fast lookups.
+
+- Throttling & Robots.txt:
+- How do we respect website crawling limits (request frequency)?
+- Implementing a politeness policy: only sending one request per domain per second.
+
+- Retry Logic:
+- How will we handle failed requests? Retries with exponential backoff? Circuit breakers?
+
+Key phrases:
+- “In the URL Frontier, I’d store each URL and its depth to ensure we don’t crawl beyond the defined level. I’d also use a Bloom filter to quickly detect duplicates.”
+- "For the Crawler Manager, I’ll use a thread pool or worker-based system to parallelize crawling, enabling horizontal scalability."
+
+4. Scalability & Distributed Crawling (8–10 minutes)
+Goal: Focus on making the crawler scalable and fault-tolerant for large-scale use.
+- Horizontal Scaling: How would you scale the crawler to handle millions of URLs? You can talk about distributed crawling with:
+- Message queues (e.g., RabbitMQ or Kafka) to assign URLs across different machines.
+- Load balancers for distributing URL processing across servers.
+- Sharding by domain to make domain-based partitioning easier.
+
+- Data Storage at Scale:
+- Discuss how data storage systems like Hadoop or Amazon S3 can be used for storing large volumes of HTML content.
+- Use distributed databases (like Cassandra) for metadata.
+
+- Monitoring & Alerting:
+- Introduce tools like Prometheus or Grafana for real-time metrics, showing the health of crawlers.
+- Build alert systems for failure detection (crawlers getting stuck, memory leaks, etc.).
+
+Key phrases:
+- “For scaling, I’d introduce distributed crawlers across machines with a message queue for assigning URLs to workers.”
+- “To handle high throughput, I’d also shard URLs by domain and ensure we respect rate limits per domain.”
+
+5. Handling Edge Cases and Errors (8–10 minutes)
+Goal: Show that you’ve thought through potential problems and how to handle them.
+- Error Handling:
+- Discuss retries with backoff.
+- Circuit breaking to stop retrying after a set threshold.
+
+- Loop Detection:
+- Explain how you'll implement logic to avoid visiting the same set of pages over and over.
+
+- Handling CAPTCHAs and IP Blocking:
+- Use techniques like rotating proxies or headless browser detection to handle advanced cases.
+
+Key phrases:
+- "For failed requests, I’d implement exponential backoff and a retry limit to prevent overwhelming the system."
+- “To avoid URL loops, I’d maintain a hash of visited URLs and use it for quick lookups before processing new URLs.”
+
+6. Trade-offs and Optimizations (7–10 minutes)
+Goal: Discuss trade-offs in your design decisions and show flexibility.
+- Crawl Rate vs. Website Load:
+- Trade-off between aggressive crawling and politeness to avoid overloading websites.
+
+- Consistency vs. Availability:
+- You might prioritize availability (crawling more pages) over consistency (processing data immediately).
+
+- Storage Choices:
+- Trade-off between SQL (structured) vs. NoSQL (flexible).
+
+- Real-Time Processing vs. Batch Processing:
+- Discuss whether processing the data in real-time or in batches makes more sense for your design.
+
+Key phrases:
+- “One trade-off here is between aggressive crawling to cover more pages and being polite to websites. We can throttle requests but reduce our crawl rate.”
+- “For storage, using NoSQL gives us flexibility, but it comes at the cost of complex querying.”
+
+---
+
+🏁 Conclusion (2–3 minutes)
+Goal: Recap your design decisions and highlight any improvements or potential future enhancements.
+- Briefly summarize the key components.
+- Mention how the system is scalable, fault-tolerant, and avoids common pitfalls like loops or overloading websites.
+
+Key phrases:
+- “To summarize, this design uses a distributed crawler system with a URL frontier, robust error handling, and a scalable architecture to crawl billions of web pages efficiently.”
+- “Future improvements could include adding machine learning to predict the most valuable URLs to crawl next, and improving fault tolerance through more sophisticated retry policies.”
+
+---
+
+Timing Breakdown:
+- Clarifications: 5-7 minutes
+- High-level Architecture: 8-10 minutes
+- Detailed Design of Components: 15-20 minutes
+- Scalability: 8-10 minutes
+- Edge Cases: 8-10 minutes
+- Trade-offs: 7-10 minutes
+- Conclusion: 2-3 minutes

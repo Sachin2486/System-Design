@@ -1,0 +1,93 @@
+1. Clarifying Questions (5-10 minutes)
+- Understand the Scope: Ask questions to clarify the extent of customization in scorecards. For example:
+- Can sections/questions be reused across scorecards?
+- How complex are the scoring rules (e.g., predefined weights, dynamic based on user input)?
+- Any constraints around real-time updates and latency for certain actions?
+- User Base: How large is the organization or group of users (employees, evaluators, admins)?
+- Audit & Versioning: What depth of audit history is required? Can scorecards be reverted to previous versions?
+
+2. Defining Functional Components (10 minutes)
+- User Roles: Outline the three roles (Admin, Evaluator, User), their access levels, and typical workflows:
+- Admin: Manage scorecards, assign evaluators, set permissions, view history.
+- Evaluator: Fill out scorecards, submit them for finalization.
+- User: View finalized scorecards.
+- Scorecard Lifecycle: Highlight the states (Draft, Submitted, Finalized) and transition rules, including who can trigger state changes.
+- Custom Scoring Rules: Briefly discuss weighted scores, types of questions (numeric, textual feedback), and how flexible or dynamic they need to be.
+- Notifications: Define when notifications are triggered (e.g., when a scorecard is submitted or finalized).
+
+3. High-Level Architecture (10-15 minutes)
+- Microservices: Suggest a microservice architecture where:
+- User Management Service: Handles roles, authentication (JWT or OAuth), and role-based access control (RBAC).
+- Scorecard Service: Manages the lifecycle of scorecards (creation, update, submit, finalize).
+- Section & Question Service: Manages sections, questions, and scoring logic.
+- Audit & Versioning Service: Logs all changes to scorecards for future reference.
+- API Gateway: Exposes REST APIs for interacting with the services.
+- Database Layer: Use a relational database (like PostgreSQL) to store user info, scorecards, sections, questions, and scores.
+
+4. Database Design (10-15 minutes)
+- Entity Relationships:
+- User Table: Stores user ID, name, email, and role.
+- Scorecard Table: Stores scorecard ID, title, status (Draft, Submitted, Finalized), created_by (Admin), and assigned_evaluator.
+- Section Table: Links sections to a scorecard.
+- Question Table: Links questions to sections, including type (numeric, text).
+- Score Table: Stores responses to questions by evaluators (numeric score or textual feedback).
+- Audit Log Table: Tracks actions (create, update, finalize), timestamp, and the user performing the action.
+- Indexes: Suggest indexing scorecard status, user ID, and date fields to optimize query performance.
+
+5. System Scale and Non-Functional Requirements (10-12 minutes)
+- Scalability: Suggest using load balancers and database replication to support high traffic. Discuss strategies like sharding based on user or organization ID if needed.
+- Availability: Propose cloud-based solutions (AWS, GCP) with auto-scaling, multi-region deployment, and 99.9% uptime SLA.
+- Low Latency: Ensure quick access by using caching mechanisms (e.g., Redis) for frequently accessed data like scorecard templates or past versions.
+- Security: Implement encryption at rest and in transit, access control at service levels, and ensure compliance with data protection standards (e.g., GDPR).
+
+6. APIs and Sample Queries (5-8 minutes)
+- User Management:
+- `POST /login`: For user authentication.
+- `POST /users`: To create new users with roles.
+- Scorecard Management:
+- `POST /scorecards`: To create a new scorecard.
+- `PATCH /scorecards/:id`: To update a scorecard.
+- `POST /scorecards/:id/submit`: To submit a scorecard for review.
+- `POST /scorecards/:id/finalize`: To finalize a scorecard.
+- Reports:
+- `GET /reports`: Filter scorecards by evaluator, date range, or status.
+- SQL Queries:
+1. Retrieve Scorecards for an Evaluator:
+```sql
+SELECT * FROM scorecards WHERE evaluator_id = ? AND created_at BETWEEN ? AND ?;
+```
+2. Fetch Sections and Questions for a Scorecard:
+```sql
+SELECT sections.title, questions.text
+FROM sections
+JOIN questions ON sections.id = questions.section_id
+WHERE scorecard_id = ?;
+```
+3. Generate Report on Score Distribution:
+```sql
+SELECT user_id, AVG(score) AS average_score
+FROM scores
+WHERE scorecard_id IN (SELECT id FROM scorecards WHERE created_at BETWEEN ? AND ?)
+GROUP BY user_id;
+```
+
+7. Final Thoughts and Trade-offs (3-5 minutes)
+- Discuss trade-offs, such as prioritizing features vs. performance (e.g., audit logging could add overhead).
+- Mention potential future enhancements like AI-based scorecard analysis or dynamic question generation based on previous answers.
+
+This structure ensures you hit all the key areas while managing time effectively.
+
+
+Summary of Time Allocation
+
+| Activity                               | Time (minutes)  |
+|----------------------------------------|-----------------|
+| Introduction                           | 5               |
+| Problem Statement Clarification        | 5               |
+| High-Level Design Discussion           | 15              |
+| API Design                             | 10              |
+| Database Design                        | 10              |
+| Non-Functional Requirements            | 5               |
+| Use Case Queries                       | 5               |
+| Wrap-up and Questions                  | 5               |
+| Total                                  | 60              |

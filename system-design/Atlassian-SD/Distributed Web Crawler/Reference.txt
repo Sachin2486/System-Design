@@ -1,0 +1,8 @@
+Leetcode Link : https://leetcode.com/discuss/interview-experience/4133665/Atlassian-P6-or-Sydney-or-Rejected-offer
+
+
+System design, 1 hour
+Design a web crawler - I did a few mistakes and forgot about loops ln obtained links,
+quickly fixed design after interviewer mentioned it.
+If you want p6 here there is no room for errors or hesitation, everything will be used against you.
+In general I find judging super biased and unrealistic.

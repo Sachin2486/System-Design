@@ -1,0 +1,114 @@
+Database Schema Design
+
+1. Users Table
+Stores information about the users of the system (viewers, content creators, admins).
+
+| Column Name     | Data Type     | Constraints          | Description                            |
+|------------------|---------------|----------------------|----------------------------------------|
+| user_id          | INT           | PRIMARY KEY, AUTO_INCREMENT | Unique identifier for each user.      |
+| username         | VARCHAR(255)  | NOT NULL, UNIQUE     | User's display name.                   |
+| email            | VARCHAR(255)  | NOT NULL, UNIQUE     | User's email address.                  |
+| password_hash    | VARCHAR(255)  | NOT NULL             | Hashed password for authentication.    |
+| role             | ENUM('viewer', 'content_creator', 'admin') | NOT NULL | Role of the user in the system.       |
+| created_at       | DATETIME      | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Timestamp of when the user was created. |
+| updated_at       | DATETIME      | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Timestamp of last update. |
+
+2. Videos Table
+Stores details about the videos uploaded by content creators.
+
+| Column Name      | Data Type     | Constraints          | Description                            |
+|-------------------|---------------|----------------------|----------------------------------------|
+| video_id          | INT           | PRIMARY KEY, AUTO_INCREMENT | Unique identifier for each video.     |
+| title             | VARCHAR(255)  | NOT NULL             | Title of the video.                    |
+| description       | TEXT          |                      | Description of the video.              |
+| upload_time       | DATETIME      | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Timestamp of when the video was uploaded. |
+| channel_id        | INT           | NOT NULL             | Foreign key referencing the user_id of the content creator. |
+| category          | VARCHAR(100)  | NOT NULL             | Category of the video (e.g., Music, Sports). |
+| thumbnail_url     | VARCHAR(255)  |                      | URL for the video thumbnail image.     |
+| is_active         | BOOLEAN       | NOT NULL, DEFAULT TRUE | Indicates if the video is active.     |
+| created_at        | DATETIME      | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Timestamp of when the video was created. |
+| updated_at        | DATETIME      | DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP | Timestamp of last update. |
+
+3. Telemetry Data Table
+Stores real-time engagement metrics for each video.
+
+| Column Name      | Data Type     | Constraints          | Description                            |
+|-------------------|---------------|----------------------|----------------------------------------|
+| telemetry_id      | INT           | PRIMARY KEY, AUTO_INCREMENT | Unique identifier for each telemetry record. |
+| video_id          | INT           | NOT NULL             | Foreign key referencing Videos(video_id). |
+| views             | INT           | NOT NULL, DEFAULT 0  | Number of views for the video.        |
+| likes             | INT           | NOT NULL, DEFAULT 0  | Number of likes for the video.        |
+| shares            | INT           | NOT NULL, DEFAULT 0  | Number of shares for the video.       |
+| created_at        | DATETIME      | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Timestamp of when the record was created. |
+
+4. Ranking Scores Table
+Stores calculated ranking scores for each video.
+
+| Column Name      | Data Type     | Constraints          | Description                            |
+|-------------------|---------------|----------------------|----------------------------------------|
+| ranking_id        | INT           | PRIMARY KEY, AUTO_INCREMENT | Unique identifier for each ranking record. |
+| video_id          | INT           | NOT NULL             | Foreign key referencing Videos(video_id). |
+| percentile_score   | FLOAT         | NOT NULL             | Percentile score for the video based on engagement. |
+| last_updated      | DATETIME      | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Timestamp of the last update for ranking. |
+
+5. Comments Table
+Stores user comments on videos.
+
+| Column Name      | Data Type     | Constraints          | Description                            |
+|-------------------|---------------|----------------------|----------------------------------------|
+| comment_id        | INT           | PRIMARY KEY, AUTO_INCREMENT | Unique identifier for each comment.    |
+| video_id          | INT           | NOT NULL             | Foreign key referencing Videos(video_id). |
+| user_id           | INT           | NOT NULL             | Foreign key referencing Users(user_id). |
+| comment_text      | TEXT          | NOT NULL             | Text of the comment.                   |
+| created_at        | DATETIME      | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Timestamp of when the comment was created. |
+
+6. Likes Table
+Tracks user likes for videos.
+
+| Column Name      | Data Type     | Constraints          | Description                            |
+|-------------------|---------------|----------------------|----------------------------------------|
+| like_id           | INT           | PRIMARY KEY, AUTO_INCREMENT | Unique identifier for each like record. |
+| video_id          | INT           | NOT NULL             | Foreign key referencing Videos(video_id). |
+| user_id           | INT           | NOT NULL             | Foreign key referencing Users(user_id). |
+| created_at        | DATETIME      | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Timestamp of when the like was made. |
+
+Relationships
+- Users can upload multiple Videos (One-to-Many).
+- Videos can have multiple Telemetry Data records (One-to-Many).
+- Videos can have multiple Comments (One-to-Many).
+- Users can like multiple Videos, and Videos can be liked by multiple Users (Many-to-Many relationship, managed through the Likes table).
+- Videos have one corresponding Ranking Score (One-to-One).
+
+Indexes and Optimization
+- Indexes on `video_id`, `user_id`, and other frequently queried fields to improve lookup performance.
+- Use foreign keys to maintain data integrity and cascading delete/update rules where applicable.
+
+Summary
+This schema provides a comprehensive structure to manage users, videos, engagement metrics,
+and the ranking system while allowing for efficient querying and data integrity.
+It supports the core functionalities required for a YouTube-like trending video system and
+can be further optimized based on specific performance requirements and user needs.
+
+Additional Design Considerations
+
+1. Scalability and Performance:
+- Consider using database sharding for distributing data across multiple databases to handle high traffic.
+- Implement caching strategies using systems like Redis to store frequently accessed data, such as trending videos or popular tags, to reduce load on the primary database.
+[Read more about caching strategies](https://medium.com/@yourusername/the-benefits-of-caching-strategies-in-scalable-applications-4a3de6d8c194)
+
+2. Data Consistency:
+- Use event sourcing or CQRS (Command Query Responsibility Segregation) patterns to manage changes in state and ensure that views of the data are always consistent.
+[Explore event sourcing and CQRS](https://medium.com/@yourusername/cqrs-and-event-sourcing-an-introduction-52f83f276703)
+
+3. Security Considerations:
+- Implement OAuth 2.0 for secure user authentication and authorization, ensuring users can only access data they are permitted to view.
+- Encrypt sensitive information, such as passwords and personal user data, using strong encryption algorithms.
+[Learn more about secure authentication](https://medium.com/@yourusername/securing-your-applications-with-oauth-2-0-afe5582dc6)
+
+4. Analytics and Reporting:
+- Plan for analytics capabilities to track user engagement, video performance, and overall system metrics, which can be stored in a data warehouse for complex queries.
+[Check out analytics strategies](https://medium.com/@yourusername/understanding-user-engagement-with-analytics-8d3e7c4b9b72)
+
+5. Audit and Compliance:
+- Ensure to implement audit logs for critical actions like video uploads, deletions, and user activity to meet compliance and security standards.
+[Read about implementing audit logs](https://medium.com/@yourusername/why-you-need-audit-logs-in-your-application-9c4bcd78e5f6)

@@ -1,0 +1,57 @@
+Here’s a similar system design question using emojis:
+
+🎨 System Design Question: Favorite Color Picker App 🌈
+
+🧠 Problem Statement:
+You need to design a web app where users can pick their favorite colors 🎨, save them in lists 📋,
+and manage those lists with additional functionalities. The system will allow users to save, delete,
+and share their color lists ✉️ with others. Users will also be able to control who can access 👀and view
+their favorite color lists. The focus should be on building the functionality and considering the scale of the system.
+
+💡 Requirements:
+
+🔍 Functional Requirements:
+1. User Actions:
+   - Save a color: Users can select their favorite colors 🎨from a color palette and save them to a personalized list 📋.
+   - Delete a color: Users can remove colors from their saved list 🗑️.
+   - Share list: Users can send their color list to others via email ✉️ for collaboration or viewing.
+2. Access Control:
+   - Users can define access permissions 🔑, deciding who can view 👀 or edit ✏️ their color lists.
+3. Viewing Permissions:
+   - Users can set lists as public (anyone can see 👁️‍🗨️) or private (only invited users can view 🔐).
+
+⚙️ Non-Functional Requirements:
+1. Scalability:
+   - The system should handle a large number of users simultaneously picking colors and managing lists 🌍.
+2. Availability:
+   - Ensure 99.9% uptime ⏱️, so users can access their color lists from anywhere 🌐.
+3. Low Latency:
+   - Color saving and sharing operations should be quick ⚡, with near-instant updates to the list.
+
+4. Security:
+   - Ensure color lists are protected 🛡️, and only authorized users can access or modify lists.
+
+🌐 API Design:
+
+Design the RESTful APIs for managing user color lists. Your APIs should support the following:
+
+- User Authentication: APIs for login 🔑, registration 📝, and access control management.
+- Color List Management: APIs to save 🎨, delete 🗑️, and share ✉️ color lists.
+- Permissions: APIs to set and manage access controls 🔐 on user lists.
+
+🗃️ Database Design:
+
+Create a schema to handle the following entities:
+
+1. Users: Store user information 🧑‍💻 (name, email), access rights, and color lists.
+2. Color Lists: Store the list of colors 🌈 saved by each user.
+3. Shared Access: Track which users can view or modify specific color lists 👀.
+4. Audit Logs: Log actions 📝 such as color additions, deletions, and sharing for auditing purposes.
+
+🔍 Use Case Queries:
+
+Write SQL queries 🧑‍💻 to solve the following:
+
+1. Retrieve all colors saved by a specific user 👥.
+2. Fetch all users who have access to a specific color list 📝.
+3. Generate a report 📊 of the most commonly saved colors across all users.

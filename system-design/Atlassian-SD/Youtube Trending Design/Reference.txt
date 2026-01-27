@@ -1,0 +1,19 @@
+Leetcode Link : https://leetcode.com/discuss/interview-experience/3846033/Atlassian-or-P4-or-India-or-2023-Offer
+
+
+Design trending videos on Youtube.
+This was by far my favourite round and the interviewer seemed a great person
+and we had a nice discussion starting from the services involved, the API request response structures,
+the choice of database, the DB schema. My approach was to design a ingestion pipeline to stream video
+view count telemetry which would then be used to build a hit counter kind of system.
+This would then go into a ranking engine with weighted ranking algorithm based on various metrics &
+finally each video would be assigned a %ile score determining their position in the "trend".
+We discussed on various aspects like DB sharding, pagination, how the services would scale,
+various LB algorithms like round robin, weighted round robin, etc.I really enjoyed giving this round.
+
+I would rate myself a 8/10 in this round.
+(I am mostly a backend engineer so I called out upfront I will not be able to cover
+the ML side of things in the ranking,he said that's completely fine since this is a SDE role and his
+primary expectation was the system architecture & the scaling aspects)
+
+

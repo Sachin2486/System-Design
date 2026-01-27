@@ -1,0 +1,27 @@
+Leetcode Link : https://leetcode.com/discuss/interview-experience/3413193/Atlassian-or-Principal-or-Remote-Pass
+                https://leetcode.com/discuss/interview-experience/3846033/Atlassian-or-P4-or-India-or-2023-Offer
+
+Second round - LLD
+Typical Rate Limiter question. Asked me to code "X requests in Y seconds" and how would i make it extendable.
+First off, interviewer was rudee - came late, no introduction whatsoever,
+assumed the interviewee is familiar with various rate limiting algorithms.
+Anyway, implemented fixed time window algorithm
+(after choosing between token bucket or sliding time window) with appropriate interfaces.
+
+
+2nd Round: LLD
+
+
+The usual famous rate limiter question.
+I first implemented using a sliding counter based approach but interviewer was not satisfied
+with the approach for some reason. I was around 30 minutes into the interview.
+To me the algorithm seemed fine, and when I asked him to give some examples where
+it would not work he was unable to give but asked me to try some other approach,
+instead of arguing with him, I decided to use the remaining time in coming up with the
+conventional queue based sliding window approach. He was satisfied with this solution.
+After this, in the remaining 5 minutes he briefly asked some follow up questions on real
+life implementations of rate limiters and how they could be designed.
+In my company we have rule engine configuration based rate limiters so told him about the architecture of the same.
+
+
+I would rate myself a 8/10 in this round.

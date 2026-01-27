@@ -1,0 +1,8 @@
+Leetcode Link : https://leetcode.com/discuss/interview-experience/1859629/Atlassian-or-SDE-2-or-Remote-ACCEPTED
+
+
+System Design Round - Design a site that allows users to pick a few colors and save it as a list.
+The following features were expected to be built - save a color, delete a color,share colors
+list with a bunch of users through email, access control to allow other users to view your favorite color list
+More focus was given on building the actual functionality and the scale of the system.
+

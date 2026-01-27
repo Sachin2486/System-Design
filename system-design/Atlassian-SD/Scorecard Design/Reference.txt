@@ -1,0 +1,8 @@
+Leetcode Link : https://leetcode.com/discuss/interview-experience/5867781/Atlassian-(P40)
+
+System Design Round
+Scorecard Design(problem statement was bit lengthy but this was the main question )
+Functional and Non Functional requirements with high level diagram,
+API Design including Protocols
+Database design and some usecase query.
+

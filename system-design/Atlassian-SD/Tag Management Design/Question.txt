@@ -1,0 +1,60 @@
+
+🛠️ System Design Question: Tag Management System for JIRA and Confluence 📝
+
+🧠 Problem Statement:
+You need to design a Tag Management System that helps users effectively manage tags across JIRA and Confluence.
+ This system should allow users to create, manage, and apply tags to issues, pages, and other relevant entities,
+ ensuring consistency across both platforms. Users include Admins, Developers, and Content Creators.
+
+💡 Requirements:
+
+🔍 Functional Requirements:
+1. User Roles:
+   - Admin: Can create and manage tags, define permissions, and view usage statistics.
+   - Developer: Can apply tags to issues and link them to relevant projects.
+   - Content Creator: Can add tags to pages in Confluence for better organization and searchability.
+2. Tag Lifecycle:
+   - Tags should have states: Active and Inactive.
+   - Admins can deactivate tags that are no longer needed.
+3. Tagging Rules:
+   - Support for hierarchical tags (parent-child relationships).
+   - Tags should allow for multi-select options when applying to issues or pages.
+4. Search & Filtering:
+   - Users should be able to search for tags and filter by category, frequency of use, or related entities.
+5. Notifications:
+   - Users should receive notifications when tags are created, modified, or removed.
+
+
+⚙️ Non-Functional Requirements:
+1. Scalability:
+   - The system should handle thousands of tags and their associations efficiently.
+2. Availability:
+   - Ensure high availability, aiming for 99.9% uptime.
+3. Low Latency:
+   - The system should respond quickly, with requests completing in under 200ms.
+4. Security:
+   - Secure sensitive data and ensure proper authentication for tag management actions.
+5. Auditability:
+   - Log all actions related to tag creation, modification, and deletion for compliance.
+
+🌐 API Design:
+
+Design the RESTful APIs to manage users, tags, and their associations. Your APIs should support the following:
+- User Authentication: APIs for login, registration, and role-based access control.
+- Tag Management: APIs to create, update, deactivate, and delete tags.
+- Tag Association: APIs to associate tags with issues in JIRA and pages in Confluence.
+
+🗃️ Database Design:
+
+Create a schema to handle the following entities:
+1. Users: Store user information (name, email) and roles (Admin, Developer, Content Creator).
+2. Tags: Store tag details (name, description, status).
+3. Tag Associations: Track relationships between tags and their usage in JIRA issues and Confluence pages.
+4. Audit Logs: Record all changes made to tags for auditing purposes.
+
+🔍 Use Case Queries:
+
+Write SQL queries to solve the following:
+1. Retrieve all tags used in a specific JIRA project.
+2. Fetch tags associated with a specific Confluence page.
+3. Generate reports showing tag usage frequency across different projects.
