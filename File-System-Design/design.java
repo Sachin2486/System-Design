@@ -1,113 +1,210 @@
-Requirement : Implement core Linux File System commands (e.g., mkdir, cd, ls, pwd).
 
+// Problem
+// File System API Implementation
+
+// Design an in-memory file system that mimics basic Linux directory operations.
+
+// Required APIs:
+
+// mkdir(dirname: string)
+// pwd()
+// cd(path: string)
+// Functional requirements
+
+// mkdir(dirname)
+// Creates a new directory inside the current working directory.
+
+// pwd()
+// Returns the absolute path of the current working directory.
+
+// cd(path)
+// Changes the current working directory.
+
+// Path rules
+
+// If the path starts with /, it represents an absolute path from root
+// Otherwise it is a relative path from the current directory
+// The path may contain a wildcard *.
+
+// * can match:
+
+// the current directory (.)
+// the parent directory (..)
+// any child directory
+// The APIs should behave similarly to Linux directory navigation commands.
+
+
+////// --------   END ---------- /////
 
 import java.util.*;
 
-/*
- =========================================================
- Linux File System Commands (mkdir, cd, ls, pwd)
- =========================================================
-*/
-
-/* ================= NODE ================= */
-class Node {
-    String name;
-    Map<String, Node> children;
-    Node parent;
-
-    Node(String name, Node parent) {
+class Directory {
+    private final String name;
+    private final Directory parent;
+    
+    //O(1) child lookup 
+    private final Map<String, Directory> children;
+    
+    public Directory(String name, Directory parent) {
         this.name = name;
         this.parent = parent;
         this.children = new HashMap<>();
     }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public Directory getParent() {
+        return parent;
+    }
+    
+    public Map<String, Directory> getChildren() {
+        return children;
+    }
+    
+    public void addChild(Directory child) {
+        children.put(child.getName(), child);
+    }
 }
 
-/* ================= FILE SYSTEM ================= */
+
 class FileSystem {
-
-    private final Node root;
-    private Node current;
-
-    FileSystem() {
-        root = new Node("/", null);
+    
+    private final Directory root;
+    private Directory current;
+    
+    public FileSystem() {
+        root = new Directory("/", null);
         current = root;
     }
-
-    /* -------- MKDIR -------- */
-    public void mkdir(String path) {
-        Node node = resolve(path, true);
+    
+    public void mkdir(String dirName) {
+        if(current.getChildren().containsKey(dirName)) {
+            throw new IllegalArgumentException(
+                "Directory already exists: " + dirName
+                );
+        }
+        
+        Directory child = new Directory(dirName, current);
+        current.addChild(child);
     }
+    
+     public String pwd() {
 
-    /* -------- LS -------- */
-    public List<String> ls(String path) {
-        Node node = resolve(path, false);
-        List<String> res = new ArrayList<>(node.children.keySet());
-        Collections.sort(res);
-        return res;
-    }
-
-    /* -------- CD -------- */
-    public void cd(String path) {
-        Node node = resolve(path, false);
-        current = node;
-    }
-
-    /* -------- PWD -------- */
-    public String pwd() {
-        if (current == root) return "/";
-
-        List<String> parts = new ArrayList<>();
-        Node temp = current;
-
-        while (temp != null && temp != root) {
-            parts.add(temp.name);
-            temp = temp.parent;
+        if (current == root) {
+            return "/";
         }
 
-        Collections.reverse(parts);
-        return "/" + String.join("/", parts);
-    }
+        Deque<String> stack = new ArrayDeque<>();
 
-    /* -------- PATH RESOLUTION -------- */
-    private Node resolve(String path, boolean create) {
+        Directory node = current;
+
+        while (node != root) {
+            stack.push(node.getName());
+            node = node.getParent();
+        }
+
+        StringBuilder path = new StringBuilder();
+
+        while (!stack.isEmpty()) {
+            path.append("/").append(stack.pop());
+        }
+
+        return path.toString();
+    }
+    
+    public void cd(String path) {
+
+        if (path == null || path.isEmpty()) {
+            return;
+        }
+
+        Directory node;
+
+        if (path.startsWith("/")) {
+            node = root;
+        } else {
+            node = current;
+        }
 
         String[] parts = path.split("/");
-        Node node = path.startsWith("/") ? root : current;
 
         for (String part : parts) {
 
-            if (part.isEmpty() || part.equals(".")) continue;
+            if (part.isEmpty()) {
+                continue;
+            }
 
+            // .
+            if (part.equals(".")) {
+                continue;
+            }
+
+            // ..
             if (part.equals("..")) {
-                if (node.parent != null) node = node.parent;
-            } else {
-                node.children.putIfAbsent(part, create ? new Node(part, node) : null);
+                if (node.getParent() != null) {
+                    node = node.getParent();
+                }
+                continue;
+            }
 
-                if (!node.children.containsKey(part) || node.children.get(part) == null) {
-                    throw new RuntimeException("Path not found: " + part);
+            // *
+            if (part.equals("*")) {
+
+                if (!node.getChildren().isEmpty()) {
+
+                    // deterministic first child
+                    node = node.getChildren()
+                            .values()
+                            .iterator()
+                            .next();
+                }
+                else if (node.getParent() != null) {
+                    node = node.getParent();
                 }
 
-                node = node.children.get(part);
+                continue;
             }
+
+            Directory next =
+                    node.getChildren().get(part);
+
+            if (next == null) {
+                throw new IllegalArgumentException(
+                        "Invalid path: " + path);
+            }
+
+            node = next;
         }
-        return node;
+
+        current = node;
     }
+    
 }
 
-public class Main {
-    public static void main(String[] args) {
 
-        FileSystem fs = new FileSystem();
+public class Main
+{
+	public static void main(String[] args) {
+		FileSystem fs = new FileSystem();
 
-        fs.mkdir("/a/b/c");
-        fs.cd("/a/b");
+        fs.mkdir("home");
+        fs.cd("/home");
 
-        System.out.println("PWD: " + fs.pwd());   // /a/b
+        fs.mkdir("docs");
+        fs.mkdir("photos");
 
-        fs.mkdir("d");
-        System.out.println("LS /a/b: " + fs.ls("/a/b"));
+        fs.cd("docs");
+
+        System.out.println(fs.pwd());
 
         fs.cd("..");
-        System.out.println("PWD: " + fs.pwd());   // /a
-    }
+
+        System.out.println(fs.pwd());
+
+        fs.cd("*");
+
+        System.out.println(fs.pwd());
+	}
 }
